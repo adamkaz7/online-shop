@@ -15,7 +15,6 @@ public class Smartphone extends Product {
     private int selectedBatteryCapacity;
     private List<String> selectedAccessories;
 
-
     public Smartphone(
             String id,
             String name,
