@@ -1,11 +1,10 @@
 package pl.adam.onlineshop.service;
 
 import lombok.NonNull;
-import pl.adam.onlineshop.product.Product;
+import pl.adam.onlineshop.domain.product.Product;
 import pl.adam.onlineshop.repository.ProductRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public class ProductManager {
     private final ProductRepository productRepository;

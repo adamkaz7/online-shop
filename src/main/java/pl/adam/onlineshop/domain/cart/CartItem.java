@@ -1,8 +1,8 @@
-package pl.adam.onlineshop.cart;
+package pl.adam.onlineshop.domain.cart;
 
 import lombok.Getter;
 import lombok.NonNull;
-import pl.adam.onlineshop.product.Product;
+import pl.adam.onlineshop.domain.product.Product;
 
 @Getter
 public class CartItem {

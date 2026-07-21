@@ -1,9 +1,9 @@
-package pl.adam.onlineshop.cart;
+package pl.adam.onlineshop.domain.cart;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import pl.adam.onlineshop.product.Electronics;
-import pl.adam.onlineshop.product.Product;
+import pl.adam.onlineshop.domain.product.Electronics;
+import pl.adam.onlineshop.domain.product.Product;
 
 import java.math.BigDecimal;
 

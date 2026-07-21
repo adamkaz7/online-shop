@@ -1,4 +1,4 @@
-package pl.adam.onlineshop.product;
+package pl.adam.onlineshop.domain.product;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

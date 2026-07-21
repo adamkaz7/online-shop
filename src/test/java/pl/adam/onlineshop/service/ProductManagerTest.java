@@ -7,8 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import pl.adam.onlineshop.product.Electronics;
-import pl.adam.onlineshop.product.Product;
+import pl.adam.onlineshop.domain.product.Electronics;
+import pl.adam.onlineshop.domain.product.Product;
 import pl.adam.onlineshop.repository.ProductRepository;
 
 import java.math.BigDecimal;

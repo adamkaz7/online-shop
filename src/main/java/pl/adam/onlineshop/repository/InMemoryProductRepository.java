@@ -1,7 +1,7 @@
 package pl.adam.onlineshop.repository;
 
 import lombok.NonNull;
-import pl.adam.onlineshop.product.Product;
+import pl.adam.onlineshop.domain.product.Product;
 
 import java.util.HashMap;
 import java.util.List;

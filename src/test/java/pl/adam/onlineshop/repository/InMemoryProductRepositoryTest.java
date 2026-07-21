@@ -3,8 +3,8 @@ package pl.adam.onlineshop.repository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import pl.adam.onlineshop.product.Electronics;
-import pl.adam.onlineshop.product.Product;
+import pl.adam.onlineshop.domain.product.Electronics;
+import pl.adam.onlineshop.domain.product.Product;
 
 import java.math.BigDecimal;
 import java.util.List;
