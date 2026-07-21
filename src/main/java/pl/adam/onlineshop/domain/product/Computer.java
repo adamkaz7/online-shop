@@ -32,8 +32,8 @@ public class Computer extends Product {
 
         this.availableProcessors = List.copyOf(availableProcessors);
         this.availableRam = List.copyOf(availableRam);
-        this.selectedProcessor = availableProcessors.get(0);
-        this.selectedRam = availableRam.get(0);
+        this.selectedProcessor = availableProcessors.getFirst();
+        this.selectedRam = availableRam.getFirst();
     }
 
     public void configure(String processor, int ram) {
