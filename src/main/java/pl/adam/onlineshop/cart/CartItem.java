@@ -1,6 +1,5 @@
 package pl.adam.onlineshop.cart;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import pl.adam.onlineshop.product.Product;
