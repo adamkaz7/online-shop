@@ -9,6 +9,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.adam.onlineshop.domain.product.Electronics;
 import pl.adam.onlineshop.domain.product.Product;
+import pl.adam.onlineshop.exception.ProductAlreadyExistsException;
+import pl.adam.onlineshop.exception.ProductNotFoundException;
 import pl.adam.onlineshop.repository.ProductRepository;
 
 import java.math.BigDecimal;
@@ -62,8 +64,8 @@ public class ProductManagerTest {
 
         // Act + Assert
         assertThatThrownBy(() -> productManager.addProduct(product))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Product with id " + id + " already exists");
+                .isInstanceOf(ProductAlreadyExistsException.class)
+                .hasMessage("Product with id: " + id + " already exists");
 
         verify(productRepository, never()).save(product);
     }
@@ -89,8 +91,8 @@ public class ProductManagerTest {
 
         // Act
         assertThatThrownBy(() -> productManager.updateProduct(product))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Cannot find product with id " + id);
+                .isInstanceOf(ProductNotFoundException.class)
+                .hasMessage("Cannot find product with id: " + id);
 
         verify(productRepository, never()).save(product);
     }
@@ -116,8 +118,8 @@ public class ProductManagerTest {
 
         // Act + Assert
         assertThatThrownBy(() -> productManager.removeProduct(id))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Cannot find product with id " + id);
+                .isInstanceOf(ProductNotFoundException.class)
+                .hasMessage("Cannot find product with id: " + id);
 
         verify(productRepository, never()).deleteById(id);
     }
@@ -145,8 +147,8 @@ public class ProductManagerTest {
 
         // Act + Assert
         assertThatThrownBy(() -> productManager.findProductById(id))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Cannot find product with id " + id);
+                .isInstanceOf(ProductNotFoundException.class)
+                .hasMessage("Cannot find product with id: " + id);
     }
 
     @Test

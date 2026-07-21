@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import pl.adam.onlineshop.domain.product.Electronics;
 import pl.adam.onlineshop.domain.product.Product;
+import pl.adam.onlineshop.exception.CartItemNotFoundException;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -180,8 +181,8 @@ public class CartTest {
 
         // Act + Assert
         assertThatThrownBy(() -> cart.removeProduct("P1"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Product with id P1 not found in cart");
+                .isInstanceOf(CartItemNotFoundException.class)
+                .hasMessage("Product with id: P1 not found in cart");
     }
 
     @Test
@@ -192,7 +193,7 @@ public class CartTest {
 
         // Act + Assert
         assertThatThrownBy(() -> cart.changeQuantity("P1", 5))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Product with id P1 not found in cart");
+                .isInstanceOf(CartItemNotFoundException.class)
+                .hasMessage("Product with id: P1 not found in cart");
     }
 }

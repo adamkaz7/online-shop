@@ -2,6 +2,7 @@ package pl.adam.onlineshop.domain.cart;
 
 import lombok.NonNull;
 import pl.adam.onlineshop.domain.product.Product;
+import pl.adam.onlineshop.exception.CartItemNotFoundException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,18 +29,14 @@ public class Cart {
 
     public void removeProduct(@NonNull String productId) {
         CartItem item = findItemByProductId(productId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Product with id " + productId + " not found in cart"
-                ));
+                .orElseThrow(() -> new CartItemNotFoundException(productId));
 
         items.remove(item);
     }
 
     public void changeQuantity(@NonNull String productId, int quantity) {
         CartItem item = findItemByProductId(productId)
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "Product with id " + productId + " not found in cart"
-                ));
+                .orElseThrow(() -> new CartItemNotFoundException(productId));
         item.changeQuantity(quantity);
     }
 
