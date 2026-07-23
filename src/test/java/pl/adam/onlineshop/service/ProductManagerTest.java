@@ -16,6 +16,7 @@ import pl.adam.onlineshop.repository.ProductRepository;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -23,6 +24,14 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductManagerTest {
+    private static final UUID PRODUCT_ID = UUID.fromString(
+            "00000000-0000-0000-0000-000000000001"
+    );
+
+    private static final UUID SECOND_PRODUCT_ID = UUID.fromString(
+            "00000000-0000-0000-0000-000000000002"
+    );
+
     @Mock
     private ProductRepository productRepository;
 
@@ -30,13 +39,11 @@ public class ProductManagerTest {
     private ProductManager productManager;
 
     private Product product;
-    private String id;
 
     @BeforeEach
     public void setUp() {
-        id = "ELE-001";
         product = new Electronics(
-                id,
+                PRODUCT_ID,
                 "Wireless Headphones",
                 new BigDecimal("299.99"),
                 10
@@ -47,7 +54,7 @@ public class ProductManagerTest {
     @DisplayName("Should add product when product ID does not exist")
     public void shouldAddProductWhenProductIDDoesNotExist() {
         // Arrange
-        when(productRepository.existsById(id)).thenReturn(false);
+        when(productRepository.existsById(PRODUCT_ID)).thenReturn(false);
 
         // Act
         productManager.addProduct(product);
@@ -60,12 +67,12 @@ public class ProductManagerTest {
     @DisplayName("Should throw exception when adding product with existing ID")
     public void shouldThrowExceptionWhenAddingProductWithExistingID() {
         // Arrange
-        when(productRepository.existsById(id)).thenReturn(true);
+        when(productRepository.existsById(PRODUCT_ID)).thenReturn(true);
 
         // Act + Assert
         assertThatThrownBy(() -> productManager.addProduct(product))
                 .isInstanceOf(ProductAlreadyExistsException.class)
-                .hasMessage("Product with id: " + id + " already exists");
+                .hasMessage("Product with id: " + PRODUCT_ID + " already exists");
 
         verify(productRepository, never()).save(product);
     }
@@ -74,7 +81,7 @@ public class ProductManagerTest {
     @DisplayName("Should update product when product exists")
     public void shouldUpdateProductWhenProductExists() {
         // Arrange
-        when(productRepository.existsById(id)).thenReturn(true);
+        when(productRepository.existsById(PRODUCT_ID)).thenReturn(true);
 
         // Act
         productManager.updateProduct(product);
@@ -87,12 +94,12 @@ public class ProductManagerTest {
     @DisplayName("Should throw exception when updating product that does not exist")
     public void shouldThrowExceptionWhenUpdatingProductThatDoesNotExist() {
         // Arrange
-        when(productRepository.existsById(id)).thenReturn(false);
+        when(productRepository.existsById(PRODUCT_ID)).thenReturn(false);
 
         // Act
         assertThatThrownBy(() -> productManager.updateProduct(product))
                 .isInstanceOf(ProductNotFoundException.class)
-                .hasMessage("Cannot find product with id: " + id);
+                .hasMessage("Cannot find product with id: " + PRODUCT_ID);
 
         verify(productRepository, never()).save(product);
     }
@@ -101,38 +108,38 @@ public class ProductManagerTest {
     @DisplayName("Should remove product when product exists")
     public void shouldRemoveProductWhenProductExists() {
         // Arrange
-        when(productRepository.existsById(id)).thenReturn(true);
+        when(productRepository.existsById(PRODUCT_ID)).thenReturn(true);
 
         // Act
-        productManager.removeProduct(id);
+        productManager.removeProduct(PRODUCT_ID);
 
         // Assert
-        verify(productRepository).deleteById(id);
+        verify(productRepository).deleteById(PRODUCT_ID);
     }
 
     @Test
     @DisplayName("Should throw exception when removing product that does not exist")
     public void shouldThrowExceptionWhenRemovingProductThatDoesNotExist() {
         // Arrange
-        when(productRepository.existsById(id)).thenReturn(false);
+        when(productRepository.existsById(PRODUCT_ID)).thenReturn(false);
 
         // Act + Assert
-        assertThatThrownBy(() -> productManager.removeProduct(id))
+        assertThatThrownBy(() -> productManager.removeProduct(PRODUCT_ID))
                 .isInstanceOf(ProductNotFoundException.class)
-                .hasMessage("Cannot find product with id: " + id);
+                .hasMessage("Cannot find product with id: " + PRODUCT_ID);
 
-        verify(productRepository, never()).deleteById(id);
+        verify(productRepository, never()).deleteById(PRODUCT_ID);
     }
 
     @Test
     @DisplayName("Should return product when product exists")
     public void shouldReturnProductWhenProductExists() {
         // Arrange
-        when(productRepository.findById(id))
+        when(productRepository.findById(PRODUCT_ID))
                 .thenReturn(Optional.of(product));
 
         // Act
-        Product result = productManager.findProductById(id);
+        Product result = productManager.findProductById(PRODUCT_ID);
 
         // Assert
         assertThat(result).isEqualTo(product);
@@ -142,13 +149,13 @@ public class ProductManagerTest {
     @DisplayName("Should throw exception when product cannot be found")
     public void shouldThrowExceptionWhenFindingProductThatDoesNotExist() {
         // Arrange
-        when(productRepository.findById(id))
+        when(productRepository.findById(PRODUCT_ID))
                 .thenReturn(Optional.empty());
 
         // Act + Assert
-        assertThatThrownBy(() -> productManager.findProductById(id))
+        assertThatThrownBy(() -> productManager.findProductById(PRODUCT_ID))
                 .isInstanceOf(ProductNotFoundException.class)
-                .hasMessage("Cannot find product with id: " + id);
+                .hasMessage("Cannot find product with id: " + PRODUCT_ID);
     }
 
     @Test
@@ -156,7 +163,7 @@ public class ProductManagerTest {
     public void shouldReturnAllProducts() {
         // Arrange
         Product secondProduct = new Electronics(
-                "ELE-002",
+                SECOND_PRODUCT_ID,
                 "Monitor",
                 new BigDecimal("299.99"),
                 5

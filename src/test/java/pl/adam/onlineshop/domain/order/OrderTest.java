@@ -6,19 +6,36 @@ import pl.adam.onlineshop.domain.customer.Customer;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class OrderTest {
+    private static final UUID CUSTOMER_ID = UUID.fromString(
+            "00000000-0000-0000-0000-000000000001"
+    );
+
+    private static final UUID ORDER_ID = UUID.fromString(
+            "00000000-0000-0000-0000-000000000010"
+    );
+
+    private static final UUID LAPTOP_ID = UUID.fromString(
+            "00000000-0000-0000-0000-000000000011"
+    );
+
+    private static final UUID COMPUTER_ID = UUID.fromString(
+            "00000000-0000-0000-0000-000000000012"
+    );
+
     private Customer createCustomer() {
         return new Customer(
-                "1",
+                CUSTOMER_ID,
                 "Jan Kowalski"
         );
     }
 
-    private OrderItem createOrderItem(String productId, String productName, String unitPrice, int quantity) {
+    private OrderItem createOrderItem(UUID productId, String productName, String unitPrice, int quantity) {
         return new OrderItem(
                 productId,
                 productName,
@@ -31,10 +48,9 @@ public class OrderTest {
     @DisplayName("Should create order with customer and items")
     void shouldCreateOrderWithCustomerAndItems() {
         // Arrange
-        String orderId = "ORD-1";
         Customer customer = createCustomer();
         OrderItem orderItem = createOrderItem(
-                "COM-001",
+                LAPTOP_ID,
                 "Gaming Laptop",
                 "199.99",
                 2
@@ -42,13 +58,13 @@ public class OrderTest {
 
         // Act
         Order order = new Order(
-                orderId,
+                ORDER_ID,
                 customer,
                 List.of(orderItem)
         );
 
         // Assert
-        assertThat(order.getOrderId()).isEqualTo(orderId);
+        assertThat(order.getOrderId()).isEqualTo(ORDER_ID);
         assertThat(order.getCustomer()).isEqualTo(customer);
         assertThat(order.getItems()).containsExactly(orderItem);
     }
@@ -57,14 +73,14 @@ public class OrderTest {
     @DisplayName("Should calculate total amount from all items")
     void shouldCalculateTotalAmount() {
         OrderItem laptop = createOrderItem(
-                "COM-001",
+                LAPTOP_ID,
                 "Gaming Laptop",
                 "199.99",
                 2
         );
 
         OrderItem computer = createOrderItem(
-                "COM-002",
+                COMPUTER_ID,
                 "Gaming Computer",
                 "2000.00",
                 1
@@ -72,7 +88,7 @@ public class OrderTest {
 
         // Act
         Order order = new Order(
-                "ORD-001",
+                ORDER_ID,
                 createCustomer(),
                 List.of(laptop, computer)
         );
@@ -82,11 +98,11 @@ public class OrderTest {
     }
 
     @Test
-    @DisplayName("Should reject blank order id")
-    void shouldRejectBlankOrderId() {
+    @DisplayName("Should reject null order id")
+    void shouldRejectNullOrderId() {
         // Arrange
         OrderItem orderItem = createOrderItem(
-                "COM-001",
+                COMPUTER_ID,
                 "Gaming Laptop",
                 "199.99",
                 2
@@ -94,11 +110,11 @@ public class OrderTest {
 
         // Act + Assert
         assertThatThrownBy(() -> new Order(
-                " ",
+                null,
                 createCustomer(),
                 List.of(orderItem)
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Order id must not be blank");
+        .hasMessage("Order id must not be null");
     }
 }

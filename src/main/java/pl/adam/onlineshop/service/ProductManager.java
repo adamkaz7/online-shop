@@ -8,6 +8,7 @@ import pl.adam.onlineshop.exception.ProductNotFoundException;
 import pl.adam.onlineshop.repository.ProductRepository;
 
 import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 public class ProductManager {
@@ -28,14 +29,14 @@ public class ProductManager {
         productRepository.save(product);
     }
 
-    public void removeProduct(@NonNull String id) {
+    public void removeProduct(@NonNull UUID id) {
         if (!productRepository.existsById(id)) {
             throw new ProductNotFoundException(id);
         }
         productRepository.deleteById(id);
     }
 
-    public Product findProductById(@NonNull String id) {
+    public Product findProductById(@NonNull UUID id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new ProductNotFoundException(id));
     }

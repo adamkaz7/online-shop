@@ -1,11 +1,12 @@
 package pl.adam.onlineshop.domain.order;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
-public record OrderItem(String productId, String productName, BigDecimal unitPrice, int quantity) {
+public record OrderItem(UUID productId, String productName, BigDecimal unitPrice, int quantity) {
     public OrderItem {
-        if (productId == null || productId.isBlank()) {
-            throw new IllegalArgumentException("Product id must not be blank");
+        if (productId == null) {
+            throw new IllegalArgumentException("Product id must not be null");
         }
 
         if (productName == null || productName.isBlank()) {

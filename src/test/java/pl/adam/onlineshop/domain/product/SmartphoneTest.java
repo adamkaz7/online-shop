@@ -5,16 +5,21 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SmartphoneTest {
+    private static final UUID PRODUCT_ID = UUID.fromString(
+            "00000000-0000-0000-0000-000000000001"
+    );
+
     @Test
     @DisplayName("Should create smartphone with provided product data and default configuration")
     void shouldCreateSmartphoneWithProvidedProductDataAndDefaultConfiguration() {
         // Arrange
-        String id = "SMART-001";
+        UUID id = PRODUCT_ID;
         String name = "Samsung Galaxy S25";
         BigDecimal price = new BigDecimal("3999.99");
         int availableQuantity = 8;
@@ -51,7 +56,7 @@ class SmartphoneTest {
     void shouldConfigureSmartphoneWithSelectedOptions() {
         // Arrange
         Smartphone smartphone = new Smartphone(
-                "SMART-001",
+                PRODUCT_ID,
                 "Samsung Galaxy S25",
                 new BigDecimal("3999.99"),
                 8,
@@ -82,7 +87,7 @@ class SmartphoneTest {
     void shouldThrowExceptionWhenColorIsNotAvailable() {
         // Arrange
         Smartphone smartphone = new Smartphone(
-                "SMART-001",
+                PRODUCT_ID,
                 "Samsung Galaxy S25",
                 new BigDecimal("3999.99"),
                 8,
@@ -107,7 +112,7 @@ class SmartphoneTest {
     void shouldThrowExceptionWhenBatteryCapacityIsNotAvailable() {
         // Arrange
         Smartphone smartphone = new Smartphone(
-                "SMART-001",
+                PRODUCT_ID,
                 "Samsung Galaxy S25",
                 new BigDecimal("3999.99"),
                 8,
@@ -133,7 +138,7 @@ class SmartphoneTest {
     void shouldThrowExceptionWhenAccessoryIsNotAvailable() {
         // Arrange
         Smartphone smartphone = new Smartphone(
-                "SMART-001",
+                PRODUCT_ID,
                 "Samsung Galaxy S25",
                 new BigDecimal("3999.99"),
                 8,
@@ -165,7 +170,7 @@ class SmartphoneTest {
 
         // Act + Assert
         assertThatThrownBy(() -> new Smartphone(
-                "SMART-001",
+                PRODUCT_ID,
                 "Samsung Galaxy S25",
                 new BigDecimal("3999.99"),
                 8,
@@ -185,7 +190,7 @@ class SmartphoneTest {
 
         // Act + Assert
         assertThatThrownBy(() -> new Smartphone(
-                "SMART-001",
+                PRODUCT_ID,
                 "Samsung Galaxy S25",
                 new BigDecimal("3999.99"),
                 8,
@@ -202,7 +207,7 @@ class SmartphoneTest {
     void shouldThrowExceptionWhenSelectedAccessoriesAreNull() {
         // Arrange
         Smartphone smartphone = new Smartphone(
-                "SMART-001",
+                PRODUCT_ID,
                 "Samsung Galaxy S25",
                 new BigDecimal("3999.99"),
                 8,

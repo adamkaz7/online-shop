@@ -8,12 +8,29 @@ import pl.adam.onlineshop.exception.CartItemNotFoundException;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class CartTest {
-    private Product createProduct(String id) {
+    private static final UUID FIRST_PRODUCT_ID = UUID.fromString(
+            "00000000-0000-0000-0000-000000000001"
+    );
+
+    private static final UUID SECOND_PRODUCT_ID = UUID.fromString(
+            "00000000-0000-0000-0000-000000000002"
+    );
+
+    private static final UUID THIRD_PRODUCT_ID = UUID.fromString(
+            "00000000-0000-0000-0000-000000000003"
+    );
+
+    private static final UUID MISSING_PRODUCT_ID = UUID.fromString(
+            "00000000-0000-0000-0000-000000000999"
+    );
+
+    private Product createProduct(UUID id) {
         return new Electronics(
                 id,
                 "Second test electronics",
@@ -39,7 +56,7 @@ public class CartTest {
     void shouldAddNewProductToCart() {
         // Arrange
         Cart cart = new Cart();
-        Product product = createProduct("P1");
+        Product product = createProduct(FIRST_PRODUCT_ID);
 
         // Act
         cart.addProduct(product, 2);
@@ -61,7 +78,7 @@ public class CartTest {
     void shouldIncreaseQuantityWhenProductAlreadyExists() {
         // Arrange
         Cart cart = new Cart();
-        Product product = createProduct("P1");
+        Product product = createProduct(FIRST_PRODUCT_ID);
         cart.addProduct(product, 2);
 
         // Act
@@ -77,8 +94,8 @@ public class CartTest {
     void shouldAddDifferentProductsAsSeparateCartItems() {
         // Arrange
         Cart cart = new Cart();
-        Product firstProduct = createProduct("P1");
-        Product secondProduct = createProduct("P2");
+        Product firstProduct = createProduct(FIRST_PRODUCT_ID);
+        Product secondProduct = createProduct(SECOND_PRODUCT_ID);
 
         // Act
         cart.addProduct(firstProduct, 1);
@@ -94,7 +111,7 @@ public class CartTest {
     void shouldFindCartItemById() {
         // Arrange
         Cart cart = new Cart();
-        Product product = createProduct("P1");
+        Product product = createProduct(FIRST_PRODUCT_ID);
         cart.addProduct(product, 2);
 
         // Act
@@ -117,7 +134,7 @@ public class CartTest {
         Cart cart = new Cart();
 
         // Act
-        Optional<CartItem> result = cart.findItemByProductId("not-existing-id");
+        Optional<CartItem> result = cart.findItemByProductId(MISSING_PRODUCT_ID);
 
         // Assert
         assertThat(result).isEmpty();
@@ -128,7 +145,7 @@ public class CartTest {
     void shouldRemoveProductFromCart() {
         // Arrange
         Cart cart = new Cart();
-        Product product = createProduct("P1");
+        Product product = createProduct(FIRST_PRODUCT_ID);
         cart.addProduct(product, 2);
 
         // Act
@@ -145,9 +162,9 @@ public class CartTest {
         // Arrange
         Cart cart = new Cart();
 
-        cart.addProduct(createProduct("P1"), 2);
-        cart.addProduct(createProduct("P2"), 3);
-        cart.addProduct(createProduct("P3"), 4);
+        cart.addProduct(createProduct(FIRST_PRODUCT_ID), 2);
+        cart.addProduct(createProduct(SECOND_PRODUCT_ID), 3);
+        cart.addProduct(createProduct(THIRD_PRODUCT_ID), 4);
 
         // Act
         int totalQuantity = cart.getTotalQuantity();
@@ -161,8 +178,8 @@ public class CartTest {
     void shouldClearAllItemsFromCart() {
         // Arrange
         Cart cart = new Cart();
-        cart.addProduct(createProduct("P1"), 2);
-        cart.addProduct(createProduct("P2"), 3);
+        cart.addProduct(createProduct(FIRST_PRODUCT_ID), 2);
+        cart.addProduct(createProduct(SECOND_PRODUCT_ID), 3);
 
         // Act
         cart.clearCart();
@@ -180,9 +197,9 @@ public class CartTest {
         Cart cart = new Cart();
 
         // Act + Assert
-        assertThatThrownBy(() -> cart.removeProduct("P1"))
+        assertThatThrownBy(() -> cart.removeProduct(MISSING_PRODUCT_ID))
                 .isInstanceOf(CartItemNotFoundException.class)
-                .hasMessage("Product with id: P1 not found in cart");
+                .hasMessage("Product with id: 00000000-0000-0000-0000-000000000999 not found in cart");
     }
 
     @Test
@@ -192,8 +209,8 @@ public class CartTest {
         Cart cart = new Cart();
 
         // Act + Assert
-        assertThatThrownBy(() -> cart.changeQuantity("P1", 5))
+        assertThatThrownBy(() -> cart.changeQuantity(MISSING_PRODUCT_ID, 5))
                 .isInstanceOf(CartItemNotFoundException.class)
-                .hasMessage("Product with id: P1 not found in cart");
+                .hasMessage("Product with id: 00000000-0000-0000-0000-000000000999 not found in cart");
     }
 }

@@ -9,6 +9,7 @@ import pl.adam.onlineshop.domain.product.Product;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,11 +17,19 @@ public class InMemoryProductRepositoryTest {
     private InMemoryProductRepository productRepository;
     private Product product;
 
+    private static final UUID PRODUCT_ID = UUID.fromString(
+            "00000000-0000-0000-0000-000000000001"
+    );
+
+    private static final UUID SECOND_PRODUCT_ID = UUID.fromString(
+            "00000000-0000-0000-0000-000000000002"
+    );
+
     @BeforeEach
     public void setUp() {
         productRepository = new InMemoryProductRepository();
         product = new Electronics(
-                "ELE-001",
+                PRODUCT_ID,
                 "Wireless Headphones",
                 new BigDecimal("299.99"),
                 10
@@ -61,7 +70,7 @@ public class InMemoryProductRepositoryTest {
     public void shouldReturnAllProducts() {
         // Arrange
         Product secondProduct = new Electronics(
-                "ELE-002",
+                SECOND_PRODUCT_ID,
                 "Monitor",
                 new BigDecimal("299.99"),
                 5

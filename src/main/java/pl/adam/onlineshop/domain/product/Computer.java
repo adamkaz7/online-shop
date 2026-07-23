@@ -4,6 +4,7 @@ import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 public class Computer extends Product {
@@ -14,7 +15,7 @@ public class Computer extends Product {
     private int selectedRam;
 
     public Computer(
-            String id,
+            UUID id,
             String name,
             BigDecimal price,
             int availableQuantity,

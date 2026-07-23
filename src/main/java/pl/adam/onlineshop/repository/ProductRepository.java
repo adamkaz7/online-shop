@@ -4,15 +4,16 @@ import pl.adam.onlineshop.domain.product.Product;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface ProductRepository {
     void save(Product product);
 
-    Optional<Product> findById(String id);
+    Optional<Product> findById(UUID id);
 
     List<Product> findAll();
 
-    void deleteById(String id);
+    void deleteById(UUID id);
 
-    boolean existsById(String id);
+    boolean existsById(UUID id);
 }

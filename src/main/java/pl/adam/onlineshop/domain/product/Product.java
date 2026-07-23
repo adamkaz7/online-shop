@@ -6,12 +6,13 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public abstract class Product {
     @NonNull
-    private final String id;
+    private final UUID id;
 
     @Setter
     @NonNull

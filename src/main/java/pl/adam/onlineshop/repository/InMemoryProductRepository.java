@@ -7,9 +7,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 public class InMemoryProductRepository implements ProductRepository {
-    private final Map<String, Product> products = new HashMap<>();
+    private final Map<UUID, Product> products = new HashMap<>();
 
     @Override
     public void save(@NonNull Product product) {
@@ -17,7 +18,7 @@ public class InMemoryProductRepository implements ProductRepository {
     }
 
     @Override
-    public Optional<Product> findById(@NonNull String id) {
+    public Optional<Product> findById(@NonNull UUID id) {
         return Optional.ofNullable(products.get(id));
     }
 
@@ -27,12 +28,12 @@ public class InMemoryProductRepository implements ProductRepository {
     }
 
     @Override
-    public void deleteById(@NonNull String id) {
+    public void deleteById(@NonNull UUID id) {
         products.remove(id);
     }
 
     @Override
-    public boolean existsById(@NonNull String id) {
+    public boolean existsById(@NonNull UUID id) {
         return products.containsKey(id);
     }
 }
