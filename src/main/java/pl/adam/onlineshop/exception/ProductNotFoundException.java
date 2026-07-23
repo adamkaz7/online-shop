@@ -1,0 +1,7 @@
+package pl.adam.onlineshop.exception;
+
+public class ProductNotFoundException extends RuntimeException {
+    public ProductNotFoundException(String productId) {
+        super("Cannot find product with id: " + productId);
+    }
+}
