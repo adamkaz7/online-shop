@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import pl.adam.onlineshop.domain.customer.Customer;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -115,6 +116,46 @@ public class OrderTest {
                 List.of(orderItem)
         ))
                 .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Order id must not be null");
+                .hasMessage("Order id must not be null");
+    }
+
+    @Test
+    @DisplayName("Should reject empty items")
+    void shouldRejectEmptyItems() {
+        // Act + Assert
+        assertThatThrownBy(() -> new Order(
+                ORDER_ID,
+                createCustomer(),
+                List.of()
+        ))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Order items must not be empty");
+    }
+
+    @Test
+    @DisplayName("Should protect items from modification")
+    void shouldProtectItemsFromModification() {
+        // Arrange
+        OrderItem orderItem = createOrderItem(
+                LAPTOP_ID,
+                "Gaming Laptop",
+                "199.99",
+                2
+        );
+
+        List<OrderItem> orderItems = new ArrayList<>(List.of(orderItem));
+        Order order = new Order(
+                ORDER_ID,
+                createCustomer(),
+                orderItems
+        );
+
+        // Act
+        orderItems.clear();
+
+        // Assert
+        assertThat(order.getItems()).containsExactly(orderItem);
+        assertThatThrownBy(() -> order.getItems().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
     }
 }
