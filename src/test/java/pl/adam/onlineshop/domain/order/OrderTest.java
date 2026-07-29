@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import pl.adam.onlineshop.domain.customer.Customer;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -33,6 +34,19 @@ public class OrderTest {
         return new Customer(
                 CUSTOMER_ID,
                 "Jan Kowalski"
+        );
+    }
+
+    private Order createOrder() {
+        return new Order(
+                ORDER_ID,
+                createCustomer(),
+                List.of(createOrderItem(
+                        LAPTOP_ID,
+                        "Gaming Laptop",
+                        "199.99",
+                        2
+                ))
         );
     }
 
@@ -157,5 +171,61 @@ public class OrderTest {
         assertThat(order.getItems()).containsExactly(orderItem);
         assertThatThrownBy(() -> order.getItems().clear())
                 .isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    @Test
+    @DisplayName("Should create order with NEW status and order date")
+    void shouldCreateOrderWithNewStatusAndOrderDate() {
+        // Arrange
+        LocalDateTime beforeCreation = LocalDateTime.now();
+
+        // Act
+        Order order = createOrder();
+        LocalDateTime afterCreation = LocalDateTime.now();
+
+        // Assert
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.NEW);
+        assertThat(order.getOrderDate()).isBetween(beforeCreation, afterCreation);
+    }
+
+    @Test
+    @DisplayName("Should mark order as processing")
+    void shouldMarkOrderAsProcessing() {
+        // Arrange
+        Order order = createOrder();
+
+        // Act
+        order.markAsProcessing();
+
+        // Assert
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.PROCESSING);
+    }
+
+    @Test
+    @DisplayName("Should complete processing order")
+    void shouldCompleteProcessingOrder() {
+        // Arrange
+        Order order = createOrder();
+        order.markAsProcessing();
+
+        // Act
+        order.complete();
+
+        // Assert
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.COMPLETED);
+    }
+
+    @Test
+    @DisplayName("Should cancel processing order")
+    void shouldCancelProcessingOrder() {
+        // Arrange
+        Order order = createOrder();
+        order.markAsProcessing();
+
+        // Act
+        order.cancel();
+
+        // Assert
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
     }
 }
