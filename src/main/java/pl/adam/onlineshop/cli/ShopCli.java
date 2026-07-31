@@ -8,19 +8,20 @@ import pl.adam.onlineshop.domain.order.Order;
 import pl.adam.onlineshop.domain.order.OrderItem;
 import pl.adam.onlineshop.domain.product.Product;
 import pl.adam.onlineshop.exception.InsufficientStockException;
+import pl.adam.onlineshop.exception.InvoiceFileException;
 import pl.adam.onlineshop.exception.ProductNotFoundException;
+import pl.adam.onlineshop.persistence.InvoiceFileWriter;
 import pl.adam.onlineshop.service.OrderProcessor;
 import pl.adam.onlineshop.service.ProductManager;
 
-import java.time.format.DateTimeFormatter;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
 public class ShopCli {
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
     private final ProductManager productManager;
     private final OrderProcessor orderProcessor;
+    private final InvoiceFileWriter invoiceFileWriter;
     private final Customer customer;
     private final Cart cart;
     private final ConsoleReader consoleReader;
@@ -28,12 +29,14 @@ public class ShopCli {
     public ShopCli(
             @NonNull ProductManager productManager,
             @NonNull OrderProcessor orderProcessor,
+            @NonNull InvoiceFileWriter invoiceFileWriter,
             @NonNull Customer customer,
             @NonNull Cart cart,
             @NonNull ConsoleReader consoleReader
     ) {
         this.productManager = productManager;
         this.orderProcessor = orderProcessor;
+        this.invoiceFileWriter = invoiceFileWriter;
         this.customer = customer;
         this.cart = cart;
         this.consoleReader = consoleReader;
@@ -162,12 +165,22 @@ public class ShopCli {
             System.out.println();
             System.out.println("Order placed.");
             System.out.println(order);
-            System.out.println("Status: " + order.getStatus());
-            System.out.println("Order date: " + order.getOrderDate().format(DATE_TIME_FORMATTER));
-            System.out.println("Invoice id: " + invoice.getInvoiceId());
-            System.out.println("Invoice issued at: " + invoice.getIssuedAt().format(DATE_TIME_FORMATTER));
+            System.out.println();
+            System.out.println(invoice);
+
+            saveInvoiceToFile(invoice);
         } catch (ProductNotFoundException | InsufficientStockException | IllegalArgumentException exception) {
             System.out.println("Order could not be processed: " + exception.getMessage());
+        }
+    }
+
+    private void saveInvoiceToFile(Invoice invoice) {
+        try {
+            Path invoicePath = invoiceFileWriter.write(invoice);
+
+            System.out.println("Invoice saved to: " + invoicePath);
+        } catch (InvoiceFileException exception) {
+            System.out.println("Order was placed, but invoice file could not be saved: " + exception.getMessage());
         }
     }
 }

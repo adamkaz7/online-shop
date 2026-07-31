@@ -72,8 +72,8 @@ public class Smartphone extends Product {
     @Override
     public String toString() {
         return super.toString()
-                + "\nColor: " + availableColors
-                + "\nBattery Capacity: " + availableBatteryCapacity
-                + "\nAccessories: " + availableAccessories;
+                + " | Color: " + availableColors
+                + " | Battery Capacity: " + availableBatteryCapacity + " mAh"
+                + " | Accessories: " + availableAccessories;
     }
 }

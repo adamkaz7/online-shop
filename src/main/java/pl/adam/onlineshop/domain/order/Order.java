@@ -6,11 +6,15 @@ import pl.adam.onlineshop.domain.customer.Customer;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
 public class Order {
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     @NonNull
     private final UUID orderId;
     @NonNull
@@ -64,8 +68,11 @@ public class Order {
     @Override
     public String toString() {
         return String.format(
-                "Order ID: %s | Items: %d | Total amount: %s zł",
+                "Order ID: %s | Customer: %s | Status: %s | Order date: %s | Items: %d | Total amount: %s zł",
                 orderId,
+                customer,
+                status,
+                orderDate.format(DATE_TIME_FORMATTER),
                 items.size(),
                 totalAmount
         );

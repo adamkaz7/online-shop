@@ -21,4 +21,13 @@ public class Customer {
         this.id = id;
         this.fullName = fullName;
     }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "%s (ID: %s)",
+                fullName,
+                id
+        );
+    }
 }
