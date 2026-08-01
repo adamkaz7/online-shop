@@ -70,6 +70,9 @@ public class InvoiceTest {
         assertThat(invoice.getItems()).containsExactly(item);
         assertThat(invoice.getTotalAmount()).isEqualByComparingTo(totalAmount);
         assertThat(invoice.getIssuedAt()).isEqualTo(issuedAt);
+        assertThat(invoice.getSubtotalAmount()).isEqualByComparingTo(totalAmount);
+        assertThat(invoice.hasPromotion()).isFalse();
+        assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(new BigDecimal("0.00"));
     }
 
     @Test

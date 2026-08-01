@@ -3,6 +3,7 @@ package pl.adam.onlineshop.domain.order;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import pl.adam.onlineshop.domain.customer.Customer;
+import pl.adam.onlineshop.domain.promotion.Promotion;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -109,7 +110,11 @@ public class OrderTest {
         );
 
         // Assert
+        assertThat(order.getSubtotalAmount()).isEqualByComparingTo(new BigDecimal("2399.98"));
+        assertThat(order.getDiscountAmount()).isEqualByComparingTo(new BigDecimal("0.00"));
         assertThat(order.getTotalAmount()).isEqualByComparingTo(new BigDecimal("2399.98"));
+        assertThat(order.hasPromotion()).isFalse();
+        assertThat(order.getAppliedPromotion()).isNull();
     }
 
     @Test
@@ -227,5 +232,76 @@ public class OrderTest {
 
         // Assert
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+    }
+
+    @Test
+    @DisplayName("Should apply promotion to order")
+    void shouldApplyPromotion() {
+        // Arrange
+        Order order = createOrder();
+
+        Promotion promotion = new Promotion(
+                "SAVE10",
+                new BigDecimal("10")
+        );
+
+        // Act
+        order.applyPromotion(promotion);
+
+        // Assert
+        assertThat(order.hasPromotion()).isTrue();
+        assertThat(order.getAppliedPromotion()).isSameAs(promotion);
+        assertThat(order.getSubtotalAmount()).isEqualByComparingTo(new BigDecimal("399.98"));
+        assertThat(order.getDiscountAmount()).isEqualByComparingTo(new BigDecimal("40.00"));
+        assertThat(order.getTotalAmount()).isEqualByComparingTo(new BigDecimal("359.98"));
+    }
+
+    @Test
+    @DisplayName("Should reject second promotion")
+    void shouldRejectSecondPromotion() {
+        // Arrange
+        Order order = createOrder();
+
+        Promotion firstPromotion = new Promotion(
+                "SAVE10",
+                new BigDecimal("10")
+        );
+
+        Promotion secondPromotion = new Promotion(
+                "SAVE20",
+                new BigDecimal("20")
+        );
+
+        order.applyPromotion(firstPromotion);
+
+        // Act + Assert
+        assertThatThrownBy(() -> order.applyPromotion(secondPromotion))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Promotion has already been applied");
+
+        assertThat(order.getAppliedPromotion()).isSameAs(firstPromotion);
+        assertThat(order.getTotalAmount()).isEqualByComparingTo(new BigDecimal("359.98"));
+    }
+
+    @Test
+    @DisplayName("Should reject promotion when order is not new")
+    void shouldRejectPromotionWhenOrderIsNotNew() {
+        // Arrange
+        Order order = createOrder();
+
+        Promotion promotion = new Promotion(
+                "SAVE10",
+                new BigDecimal("10")
+        );
+
+        order.markAsProcessing();
+
+        // Act + Assert
+        assertThatThrownBy(() -> order.applyPromotion(promotion))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Promotion can only be applied to NEW order");
+
+        assertThat(order.hasPromotion()).isFalse();
+        assertThat(order.getTotalAmount()).isEqualByComparingTo(new BigDecimal("399.98"));
     }
 }

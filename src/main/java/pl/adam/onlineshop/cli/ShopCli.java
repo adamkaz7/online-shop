@@ -7,12 +7,15 @@ import pl.adam.onlineshop.domain.invoice.Invoice;
 import pl.adam.onlineshop.domain.order.Order;
 import pl.adam.onlineshop.domain.order.OrderItem;
 import pl.adam.onlineshop.domain.product.Product;
+import pl.adam.onlineshop.domain.promotion.Promotion;
 import pl.adam.onlineshop.exception.InsufficientStockException;
 import pl.adam.onlineshop.exception.InvoiceFileException;
 import pl.adam.onlineshop.exception.ProductNotFoundException;
+import pl.adam.onlineshop.exception.PromotionNotFoundException;
 import pl.adam.onlineshop.persistence.InvoiceFileWriter;
 import pl.adam.onlineshop.service.OrderProcessor;
 import pl.adam.onlineshop.service.ProductManager;
+import pl.adam.onlineshop.service.PromotionService;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -21,6 +24,7 @@ import java.util.UUID;
 public class ShopCli {
     private final ProductManager productManager;
     private final OrderProcessor orderProcessor;
+    private final PromotionService promotionService;
     private final InvoiceFileWriter invoiceFileWriter;
     private final Customer customer;
     private final Cart cart;
@@ -29,6 +33,7 @@ public class ShopCli {
     public ShopCli(
             @NonNull ProductManager productManager,
             @NonNull OrderProcessor orderProcessor,
+            @NonNull PromotionService promotionService,
             @NonNull InvoiceFileWriter invoiceFileWriter,
             @NonNull Customer customer,
             @NonNull Cart cart,
@@ -36,6 +41,7 @@ public class ShopCli {
     ) {
         this.productManager = productManager;
         this.orderProcessor = orderProcessor;
+        this.promotionService = promotionService;
         this.invoiceFileWriter = invoiceFileWriter;
         this.customer = customer;
         this.cart = cart;
@@ -158,6 +164,8 @@ public class ShopCli {
         );
 
         try {
+            applyPromotion(order);
+
             Invoice invoice = orderProcessor.process(order);
 
             cart.clearCart();
@@ -169,9 +177,25 @@ public class ShopCli {
             System.out.println(invoice);
 
             saveInvoiceToFile(invoice);
-        } catch (ProductNotFoundException | InsufficientStockException | IllegalArgumentException exception) {
+        } catch (
+                PromotionNotFoundException
+                | ProductNotFoundException
+                | InsufficientStockException
+                | IllegalArgumentException exception) {
             System.out.println("Order could not be processed: " + exception.getMessage());
         }
+    }
+
+    private void applyPromotion(Order order) {
+        String promotionCode = consoleReader.readLine("Enter promotion code or press enter to skip: ");
+
+        if (promotionCode == null || promotionCode.isBlank()) {
+            return;
+        }
+
+        Promotion promotion = promotionService.findPromotionByCode(promotionCode);
+        order.applyPromotion(promotion);
+        System.out.println("Promotion applied: " + promotion.getCode());
     }
 
     private void saveInvoiceToFile(Invoice invoice) {
