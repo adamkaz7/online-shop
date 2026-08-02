@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -46,6 +46,8 @@ public class InvoiceFileWriterTest {
     private static final UUID SECOND_ORDER_ID = UUID.fromString(
             "00000000-0000-0000-0000-000000000006"
     );
+
+    private static final Instant ISSUED_AT = Instant.parse("2026-07-31T10:00:00Z");
 
     @TempDir
     Path temporaryDirectory;
@@ -87,7 +89,7 @@ public class InvoiceFileWriterTest {
                 "Invoice ID: " + INVOICE_ID,
                 "Order ID: " + ORDER_ID,
                 "Customer: Jan Kowalski (ID: " + CUSTOMER_ID + ")",
-                "Issued at: 2026-07-31 12:00:00",
+                "Issued at: 2026-07-31 12:00:00 +02:00 Europe/Warsaw",
                 "Gaming Laptop",
                 "Quantity: 2",
                 "Subtotal: 399.98 zł",
@@ -254,7 +256,7 @@ public class InvoiceFileWriterTest {
                 customer,
                 List.of(item),
                 item.calculateSubtotal(),
-                LocalDateTime.of(2026, 7, 31, 12, 0)
+                ISSUED_AT
         );
     }
 
@@ -295,7 +297,7 @@ public class InvoiceFileWriterTest {
                 promotion,
                 discountAmount,
                 totalAmount,
-                LocalDateTime.of(2026, 7, 31, 12, 0)
+                ISSUED_AT
         );
     }
 }

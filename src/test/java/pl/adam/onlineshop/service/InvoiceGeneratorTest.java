@@ -10,7 +10,9 @@ import pl.adam.onlineshop.domain.order.OrderItem;
 import pl.adam.onlineshop.domain.promotion.Promotion;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,7 +31,11 @@ public class InvoiceGeneratorTest {
             "00000000-0000-0000-0000-000000000004"
     );
 
-    private final InvoiceGenerator invoiceGenerator = new InvoiceGenerator();
+    private static final Instant ISSUED_AT = Instant.parse("2026-08-02T10:00:00Z");
+
+    private static final Clock CLOCK = Clock.fixed(ISSUED_AT, ZoneOffset.UTC);
+
+    private final InvoiceGenerator invoiceGenerator = new InvoiceGenerator(CLOCK);
 
     private Order createOrder() {
         Customer customer = new Customer(
@@ -58,11 +64,9 @@ public class InvoiceGeneratorTest {
         Order order = createOrder();
         order.markAsProcessing();
         order.complete();
-        LocalDateTime beforeGeneration = LocalDateTime.now();
 
         // Act
         Invoice invoice = invoiceGenerator.generate(order);
-        LocalDateTime afterGeneration = LocalDateTime.now();
 
         // Assert
         assertThat(invoice.getInvoiceId()).isNotNull();
@@ -73,7 +77,7 @@ public class InvoiceGeneratorTest {
         assertThat(invoice.hasPromotion()).isFalse();
         assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(order.getDiscountAmount());
         assertThat(invoice.getTotalAmount()).isEqualByComparingTo(order.getTotalAmount());
-        assertThat(invoice.getIssuedAt()).isBetween(beforeGeneration, afterGeneration);
+        assertThat(invoice.getIssuedAt()).isEqualTo(ISSUED_AT);
     }
 
     @Test

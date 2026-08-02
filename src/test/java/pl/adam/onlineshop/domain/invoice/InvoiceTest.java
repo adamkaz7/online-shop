@@ -6,7 +6,7 @@ import pl.adam.onlineshop.domain.customer.Customer;
 import pl.adam.onlineshop.domain.order.OrderItem;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +31,8 @@ public class InvoiceTest {
             "00000000-0000-0000-0000-000000000004"
     );
 
+    private static final Instant ISSUED_AT = Instant.parse("2026-07-29T08:00:00Z");
+
     private Customer createCustomer() {
         return new Customer(CUSTOMER_ID, "Jan Kowalski");
     }
@@ -51,7 +53,6 @@ public class InvoiceTest {
         Customer customer = createCustomer();
         OrderItem item = createOrderItem();
         BigDecimal totalAmount = new BigDecimal("199.99");
-        LocalDateTime issuedAt = LocalDateTime.of(2026, 7, 29, 10, 0);
 
         // Act
         Invoice invoice = new Invoice(
@@ -60,7 +61,7 @@ public class InvoiceTest {
                 customer,
                 List.of(item),
                 totalAmount,
-                issuedAt
+                ISSUED_AT
         );
 
         // Assert
@@ -69,7 +70,7 @@ public class InvoiceTest {
         assertThat(invoice.getCustomer()).isEqualTo(customer);
         assertThat(invoice.getItems()).containsExactly(item);
         assertThat(invoice.getTotalAmount()).isEqualByComparingTo(totalAmount);
-        assertThat(invoice.getIssuedAt()).isEqualTo(issuedAt);
+        assertThat(invoice.getIssuedAt()).isEqualTo(ISSUED_AT);
         assertThat(invoice.getSubtotalAmount()).isEqualByComparingTo(totalAmount);
         assertThat(invoice.hasPromotion()).isFalse();
         assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(new BigDecimal("0.00"));
@@ -88,7 +89,7 @@ public class InvoiceTest {
                 createCustomer(),
                 items,
                 item.calculateSubtotal(),
-                LocalDateTime.now()
+                ISSUED_AT
         );
 
         // Act

@@ -6,15 +6,21 @@ import pl.adam.onlineshop.domain.customer.Customer;
 import pl.adam.onlineshop.domain.promotion.Promotion;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
 public class Order {
+    private static final ZoneId SHOP_ZONE = ZoneId.of("Europe/Warsaw");
+
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            DateTimeFormatter
+                    .ofPattern("yyyy-MM-dd HH:mm:ss XXX VV")
+                    .withZone(SHOP_ZONE);
 
     @NonNull
     private final UUID orderId;
@@ -30,13 +36,14 @@ public class Order {
     private BigDecimal totalAmount;
 
     private Promotion appliedPromotion;
-    private final LocalDateTime orderDate;
+    private final Instant orderDate;
     private OrderStatus status;
 
     public Order(
             UUID orderId,
             @NonNull Customer customer,
-            @NonNull List<OrderItem> items
+            @NonNull List<OrderItem> items,
+            @NonNull Clock clock
     ) {
         if (orderId == null) {
             throw new IllegalArgumentException("Order id must not be null");
@@ -51,9 +58,22 @@ public class Order {
         this.items = List.copyOf(items);
         this.subtotalAmount = this.calculateTotalAmount();
         this.discountAmount = BigDecimal.ZERO.setScale(2);
-        this.totalAmount = subtotalAmount;
-        this.orderDate = LocalDateTime.now();
+        this.totalAmount = this.subtotalAmount;
+        this.orderDate = Instant.now(clock);
         this.status = OrderStatus.NEW;
+    }
+
+    public Order(
+            UUID orderId,
+            @NonNull Customer customer,
+            @NonNull List<OrderItem> items
+    ) {
+        this(
+                orderId,
+                customer,
+                items,
+                Clock.systemUTC()
+        );
     }
 
     private BigDecimal calculateTotalAmount() {
@@ -111,7 +131,7 @@ public class Order {
                 orderId,
                 customer,
                 status,
-                orderDate.format(DATE_TIME_FORMATTER),
+                DATE_TIME_FORMATTER.format(orderDate),
                 items.size(),
                 subtotalAmount,
                 promotionCode,
