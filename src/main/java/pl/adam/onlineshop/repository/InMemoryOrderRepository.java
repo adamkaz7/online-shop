@@ -3,14 +3,14 @@ package pl.adam.onlineshop.repository;
 import lombok.NonNull;
 import pl.adam.onlineshop.domain.order.Order;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryOrderRepository implements OrderRepository {
-    private final Map<UUID, Order> orders = new HashMap<>();
+    private final Map<UUID, Order> orders = new ConcurrentHashMap<>();
 
     @Override
     public void save(@NonNull Order order) {
