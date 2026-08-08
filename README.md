@@ -156,7 +156,7 @@ mvn compile
 Start the command-line application:
 
 ```bash
-java -cp target/classes pl.adam.onlineshop.OnlineShopApplication
+mvn compile exec:java -Dexec.mainClass=pl.adam.onlineshop.OnlineShopApplication
 ```
 
 The application can also be started from IntelliJ IDEA by running the `main()` method in `OnlineShopApplication`.
@@ -199,6 +199,7 @@ order processing.
 - Java Concurrency API (`ExecutorService`, `CompletableFuture`, `ConcurrentHashMap`)
 - Maven
 - Lombok
+- SLF4J with Simple Logger
 - JUnit 5
 - AssertJ
 - Mockito

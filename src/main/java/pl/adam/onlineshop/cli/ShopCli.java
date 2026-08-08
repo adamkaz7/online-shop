@@ -1,6 +1,7 @@
 package pl.adam.onlineshop.cli;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import pl.adam.onlineshop.domain.cart.Cart;
 import pl.adam.onlineshop.domain.customer.Customer;
 import pl.adam.onlineshop.domain.invoice.Invoice;
@@ -21,7 +22,14 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 public class ShopCli {
+    private static final int EXIT_OPTION = 0;
+    private static final int SHOW_PRODUCTS_OPTION = 1;
+    private static final int ADD_PRODUCT_TO_CART_OPTION = 2;
+    private static final int SHOW_CART_OPTION = 3;
+    private static final int PLACE_ORDER_OPTION = 4;
+
     private final ProductManager productManager;
     private final OrderProcessor orderProcessor;
     private final PromotionService promotionService;
@@ -49,33 +57,32 @@ public class ShopCli {
     }
 
     public void run() {
-        int selectOption;
+        int selectedOption;
 
         do {
-            printMenu();
-            selectOption = consoleReader.readInt("Select option: ");
-            handleOption(selectOption);
-        } while (selectOption != 0);
+            displayMenu();
+            selectedOption = consoleReader.readInt("Select option: ");
+            executeSelectedOption(selectedOption);
+        } while (selectedOption != EXIT_OPTION);
     }
 
-    private void printMenu() {
-        System.out.println();
-        System.out.println("ONLINE SHOP");
-        System.out.println("1. Show products");
-        System.out.println("2. Add product to cart");
-        System.out.println("3. Show cart");
-        System.out.println("4. Place order");
-        System.out.println("0. Exit");
+    private void displayMenu() {
+        log.info("ONLINE SHOP");
+        log.info("{}. Show products", SHOW_PRODUCTS_OPTION);
+        log.info("{}. Add product to cart", ADD_PRODUCT_TO_CART_OPTION);
+        log.info("{}. Show cart", SHOW_CART_OPTION);
+        log.info("{}. Place order", PLACE_ORDER_OPTION);
+        log.info("{}. Exit", EXIT_OPTION);
     }
 
-    private void handleOption(int selectOption) {
-        switch (selectOption) {
-            case 1 -> showProducts();
-            case 2 -> addProductToCart();
-            case 3 -> showCart();
-            case 4 -> placeOrder();
-            case 0 -> System.out.println("Goodbye!");
-            default -> System.out.println("Unknown option.");
+    private void executeSelectedOption(int selectedOption) {
+        switch (selectedOption) {
+            case SHOW_PRODUCTS_OPTION -> showProducts();
+            case ADD_PRODUCT_TO_CART_OPTION -> addProductToCart();
+            case SHOW_CART_OPTION -> showCart();
+            case PLACE_ORDER_OPTION -> placeOrder();
+            case EXIT_OPTION -> log.info("Goodbye!");
+            default -> log.warn("Unknown option.");
         }
     }
 
@@ -83,15 +90,14 @@ public class ShopCli {
         List<Product> products = productManager.getAllProducts();
 
         if (products.isEmpty()) {
-            System.out.println("No products available.");
+            log.warn("No products available.");
             return;
         }
 
-        System.out.println();
-        System.out.println("Available products:");
+        log.info("Available products:");
 
         for (int index = 0; index < products.size(); index++) {
-            System.out.println((index + 1) + ". " + products.get(index));
+            log.info("{}. {}", index + 1, products.get(index));
         }
     }
 
@@ -99,20 +105,19 @@ public class ShopCli {
         List<Product> products = productManager.getAllProducts();
 
         if (products.isEmpty()) {
-            System.out.println("No products available.");
+            log.warn("No products available.");
             return;
         }
 
-        System.out.println();
-        System.out.println("Select product:");
+        log.info("Select product:");
 
         for (int index = 0; index < products.size(); index++) {
-            System.out.println((index + 1) + ". " + products.get(index));
+            log.info("{}. {}", index + 1, products.get(index));
         }
 
         int productNumber = consoleReader.readInt("Enter product number: ");
         if (productNumber < 1 || productNumber > products.size()) {
-            System.out.println("Invalid product number.");
+            log.warn("Invalid product number.");
             return;
         }
 
@@ -122,32 +127,55 @@ public class ShopCli {
 
         try {
             cart.addProduct(selectedProduct, quantity);
-            System.out.println("Product added to cart.");
+            log.info("Product added to cart.");
         } catch (IllegalArgumentException exception) {
-            System.out.println(exception.getMessage());
+            log.warn("Could not add product to cart: {}", exception.getMessage());
         }
     }
 
     private void showCart() {
         if (cart.isEmpty()) {
-            System.out.println("Cart is empty.");
+            log.warn("Cart is empty.");
             return;
         }
 
-        System.out.println();
-        System.out.println("Your cart:");
+        log.info("Your cart:");
 
-        cart.getItems().forEach(System.out::println);
+        cart.getItems().forEach(item -> log.info("{}", item));
 
-        System.out.println("Total quantity: " + cart.getTotalQuantity());
+        log.info("Total quantity: {}", cart.getTotalQuantity());
     }
 
     private void placeOrder() {
         if (cart.isEmpty()) {
-            System.out.println("Cart is empty.");
+            log.warn("Cart is empty.");
             return;
         }
 
+        Order order = createOrderFromCart();
+
+        try {
+            applyPromotion(order);
+
+            Invoice invoice = orderProcessor.process(order);
+
+            cart.clearCart();
+
+            log.info("Order placed.");
+            log.info("Order details: {}", order);
+            log.info("Invoice details: {}", invoice);
+
+            saveInvoiceToFile(invoice);
+        } catch (
+                PromotionNotFoundException
+                | ProductNotFoundException
+                | InsufficientStockException
+                | IllegalArgumentException exception) {
+            log.warn("Order could not be processed: {}", exception.getMessage());
+        }
+    }
+
+    private Order createOrderFromCart() {
         List<OrderItem> orderItems = cart.getItems().stream()
                 .map(cartItem -> new OrderItem(
                         cartItem.getProduct().getId(),
@@ -157,33 +185,11 @@ public class ShopCli {
                 ))
                 .toList();
 
-        Order order = new Order(
+        return new Order(
                 UUID.randomUUID(),
                 customer,
                 orderItems
         );
-
-        try {
-            applyPromotion(order);
-
-            Invoice invoice = orderProcessor.process(order);
-
-            cart.clearCart();
-
-            System.out.println();
-            System.out.println("Order placed.");
-            System.out.println(order);
-            System.out.println();
-            System.out.println(invoice);
-
-            saveInvoiceToFile(invoice);
-        } catch (
-                PromotionNotFoundException
-                | ProductNotFoundException
-                | InsufficientStockException
-                | IllegalArgumentException exception) {
-            System.out.println("Order could not be processed: " + exception.getMessage());
-        }
     }
 
     private void applyPromotion(Order order) {
@@ -195,16 +201,20 @@ public class ShopCli {
 
         Promotion promotion = promotionService.findPromotionByCode(promotionCode);
         order.applyPromotion(promotion);
-        System.out.println("Promotion applied: " + promotion.getCode());
+        log.info("Promotion applied: {}", promotion.getCode());
     }
 
     private void saveInvoiceToFile(Invoice invoice) {
         try {
             Path invoicePath = invoiceFileWriter.write(invoice);
 
-            System.out.println("Invoice saved to: " + invoicePath);
+            log.info("Invoice saved to: {}", invoicePath);
         } catch (InvoiceFileException exception) {
-            System.out.println("Order was placed, but invoice file could not be saved: " + exception.getMessage());
+            log.error(
+                    "Order was placed, but invoice file could not be saved: {}",
+                    exception.getMessage(),
+                    exception
+            );
         }
     }
 }

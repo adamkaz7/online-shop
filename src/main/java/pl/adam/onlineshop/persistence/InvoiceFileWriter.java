@@ -3,6 +3,7 @@ package pl.adam.onlineshop.persistence;
 import lombok.NonNull;
 import pl.adam.onlineshop.domain.invoice.Invoice;
 import pl.adam.onlineshop.domain.order.OrderItem;
+import pl.adam.onlineshop.domain.promotion.Promotion;
 import pl.adam.onlineshop.exception.InvoiceFileException;
 
 import java.io.BufferedWriter;
@@ -63,48 +64,47 @@ public class InvoiceFileWriter {
             BufferedWriter writer,
             @NonNull Invoice invoice
     ) throws IOException {
-        writer.write("INVOICE");
-        writer.newLine();
-        writer.newLine();
+        writeLine(writer, "INVOICE");
+        writeLine(writer, "");
 
-        writer.write("Invoice ID: " + invoice.getInvoiceId());
-        writer.newLine();
-
-        writer.write("Order ID: " + invoice.getOrderId());
-        writer.newLine();
-
-        writer.write("Customer: " + invoice.getCustomer());
-        writer.newLine();
-
-        writer.write("Issued at: " + DATE_TIME_FORMATTER.format(invoice.getIssuedAt()));
-        writer.newLine();
-
-        writer.write("Items:");
-        writer.newLine();
+        writeLine(writer, "Invoice ID: " + invoice.getInvoiceId());
+        writeLine(writer, "Order ID: " + invoice.getOrderId());
+        writeLine(writer, "Customer: " + invoice.getCustomer());
+        writeLine(writer, "Issued at: " + DATE_TIME_FORMATTER.format(invoice.getIssuedAt()));
+        writeLine(writer, "Items:");
 
         for (OrderItem item : invoice.getItems()) {
-            writer.write("- " + item);
-            writer.newLine();
+            writeLine(writer, "- " + item);
         }
-        writer.newLine();
 
-        writer.write("Subtotal amount: " + invoice.getSubtotalAmount() + " zł");
-        writer.newLine();
+        writeLine(writer, "");
+        writeLine(writer, "Subtotal amount: " + invoice.getSubtotalAmount() + " zł");
 
-        String promotionDescription = invoice.hasPromotion()
-                ? invoice.getPromotion().getCode()
-                  + " ("
-                  + invoice.getPromotion().getDiscountPercentage()
-                  + "%)"
-                : "none";
+        String promotionDescription = createPromotionDescription(invoice);
 
-        writer.write("Promotion: " + promotionDescription);
-        writer.newLine();
+        writeLine(writer, "Promotion: " + promotionDescription);
+        writeLine(writer, "Discount: " + invoice.getDiscountAmount() + " zł");
+        writeLine(writer, "Total amount: " + invoice.getTotalAmount() + " zł");
+    }
 
-        writer.write("Discount: " + invoice.getDiscountAmount() + " zł");
-        writer.newLine();
+    private String createPromotionDescription(Invoice invoice) {
+        if (!invoice.hasPromotion()) {
+            return "none";
+        }
 
-        writer.write("Total amount: " + invoice.getTotalAmount() + " zł");
+        Promotion promotion = invoice.getPromotion();
+
+        return promotion.getCode()
+                + " ("
+                + promotion.getDiscountPercentage()
+                + "%)";
+    }
+
+    private void writeLine(
+            BufferedWriter writer,
+            String content
+    ) throws IOException {
+        writer.write(content);
         writer.newLine();
     }
 }
