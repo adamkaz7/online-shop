@@ -16,6 +16,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+// Design pattern: Facade
+// Provides a single entry point for stock validation,
+// order persistence and invoice generation.
 public class OrderProcessor {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
