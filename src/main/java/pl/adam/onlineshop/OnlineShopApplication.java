@@ -7,6 +7,8 @@ import pl.adam.onlineshop.domain.customer.Customer;
 import pl.adam.onlineshop.domain.product.Computer;
 import pl.adam.onlineshop.domain.product.Electronics;
 import pl.adam.onlineshop.domain.product.Smartphone;
+import pl.adam.onlineshop.domain.promotion.FixedAmountDiscountPolicy;
+import pl.adam.onlineshop.domain.promotion.PercentageDiscountPolicy;
 import pl.adam.onlineshop.domain.promotion.Promotion;
 import pl.adam.onlineshop.persistence.InvoiceFileWriter;
 import pl.adam.onlineshop.repository.InMemoryInvoiceRepository;
@@ -33,7 +35,20 @@ public class OnlineShopApplication {
         ProductManager productManager = new ProductManager(productRepository);
 
         PromotionService promotionService = new PromotionService(
-                List.of(new Promotion("SAVE10", new BigDecimal("10")))
+                List.of(
+                        new Promotion(
+                                "SAVE10",
+                                new PercentageDiscountPolicy(
+                                        new BigDecimal("10")
+                                )
+                        ),
+                        new Promotion(
+                                "SAVE20PLN",
+                                new FixedAmountDiscountPolicy(
+                                        new BigDecimal("20")
+                                )
+                        )
+                )
         );
 
         InvoiceGenerator invoiceGenerator = new InvoiceGenerator();

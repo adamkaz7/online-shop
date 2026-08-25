@@ -7,6 +7,7 @@ import org.junit.jupiter.api.io.TempDir;
 import pl.adam.onlineshop.domain.customer.Customer;
 import pl.adam.onlineshop.domain.invoice.Invoice;
 import pl.adam.onlineshop.domain.order.OrderItem;
+import pl.adam.onlineshop.domain.promotion.PercentageDiscountPolicy;
 import pl.adam.onlineshop.domain.promotion.Promotion;
 import pl.adam.onlineshop.exception.InvoiceFileException;
 
@@ -281,7 +282,7 @@ public class InvoiceFileWriterTest {
 
         Promotion promotion = new Promotion(
                 "SAVE10",
-                new BigDecimal("10")
+                new PercentageDiscountPolicy(new BigDecimal("10"))
         );
 
         BigDecimal subtotalAmount = item.calculateSubtotal();

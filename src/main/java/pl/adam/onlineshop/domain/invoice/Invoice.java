@@ -93,8 +93,8 @@ public class Invoice {
         String promotionDescription = hasPromotion()
                 ? promotion.getCode()
                   + " ("
-                  + promotion.getDiscountPercentage()
-                  + "%)" : "none";
+                  + promotion.getDiscountDescription()
+                  + ")" : "none";
 
         return String.format(
                 "Invoice ID: %s%n"
