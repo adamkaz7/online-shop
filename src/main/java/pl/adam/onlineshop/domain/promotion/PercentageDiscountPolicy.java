@@ -8,7 +8,6 @@ import java.math.RoundingMode;
 public class PercentageDiscountPolicy implements DiscountPolicy {
     private static final BigDecimal ONE_HUNDRED = new BigDecimal("100");
 
-    @NonNull
     private final BigDecimal discountPercentage;
 
     public PercentageDiscountPolicy(@NonNull BigDecimal discountPercentage) {
@@ -18,9 +17,7 @@ public class PercentageDiscountPolicy implements DiscountPolicy {
 
     @Override
     public BigDecimal calculateDiscount(@NonNull BigDecimal amount) {
-        if (amount.signum() < 0) {
-            throw new IllegalArgumentException("Amount cannot be negative");
-        }
+        validateAmount(amount);
 
         return amount
                 .multiply(discountPercentage)
@@ -31,6 +28,12 @@ public class PercentageDiscountPolicy implements DiscountPolicy {
     @Override
     public String getDescription() {
         return discountPercentage + "%";
+    }
+
+    private static void validateAmount(BigDecimal amount) {
+        if (amount.signum() < 0) {
+            throw new IllegalArgumentException("Amount cannot be negative");
+        }
     }
 
     private static void validateDiscountPercentage(BigDecimal discountPercentage) {

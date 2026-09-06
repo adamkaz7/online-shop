@@ -26,17 +26,9 @@ public class Smartphone extends Product {
             List<String> availableAccessories) {
         super(id, name, price, availableQuantity);
 
-        if (availableColors == null || availableColors.isEmpty()) {
-            throw new IllegalArgumentException("Available colors cannot be empty");
-        }
-
-        if (availableBatteryCapacity == null || availableBatteryCapacity.isEmpty()) {
-            throw new IllegalArgumentException("Available battery capacity cannot be empty");
-        }
-
-        if (availableAccessories == null || availableAccessories.isEmpty()) {
-            throw new IllegalArgumentException("Available accessories cannot be empty");
-        }
+        validateAvailableColors(availableColors);
+        validateAvailableBatteryCapacity(availableBatteryCapacity);
+        validateAvailableAccessories(availableAccessories);
 
         this.availableColors = List.copyOf(availableColors);
         this.availableBatteryCapacity = List.copyOf(availableBatteryCapacity);
@@ -47,15 +39,47 @@ public class Smartphone extends Product {
         this.selectedAccessories = List.of();
     }
 
+    private static void validateAvailableColors(List<String> availableColors) {
+        if (availableColors == null || availableColors.isEmpty()) {
+            throw new IllegalArgumentException("Available colors cannot be empty");
+        }
+    }
+
+    private static void validateAvailableBatteryCapacity(List<Integer> availableBatteryCapacity) {
+        if (availableBatteryCapacity == null || availableBatteryCapacity.isEmpty()) {
+            throw new IllegalArgumentException("Available battery capacity cannot be empty");
+        }
+    }
+
+    private static void validateAvailableAccessories(List<String> availableAccessories) {
+        if (availableAccessories == null || availableAccessories.isEmpty()) {
+            throw new IllegalArgumentException("Available accessories cannot be empty");
+        }
+    }
+
     public void configure(String color, int batteryCapacity, List<String> accessories) {
+        validateColor(color);
+        validateBatteryCapacity(batteryCapacity);
+        validateAccessories(accessories);
+
+        this.selectedColor = color;
+        this.selectedBatteryCapacity = batteryCapacity;
+        this.selectedAccessories = List.copyOf(accessories);
+    }
+
+    private void validateColor(String color) {
         if (!availableColors.contains(color)) {
             throw new IllegalArgumentException("Color " + color + " is not available for this smartphone");
         }
+    }
 
+    private void validateBatteryCapacity(int batteryCapacity) {
         if (!availableBatteryCapacity.contains(batteryCapacity)) {
             throw new IllegalArgumentException("Battery capacity " + batteryCapacity + " mAh is not available for this smartphone");
         }
+    }
 
+    private void validateAccessories(List<String> accessories) {
         if (accessories == null) {
             throw new IllegalArgumentException("Available accessories cannot be null");
         }
@@ -63,10 +87,6 @@ public class Smartphone extends Product {
         if (!availableAccessories.containsAll(accessories)) {
             throw new IllegalArgumentException("At least one accessories are not available for this smartphone");
         }
-
-        this.selectedColor = color;
-        this.selectedBatteryCapacity = batteryCapacity;
-        this.selectedAccessories = List.copyOf(accessories);
     }
 
     @Override

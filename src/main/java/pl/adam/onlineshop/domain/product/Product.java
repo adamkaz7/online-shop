@@ -9,13 +9,8 @@ import java.util.UUID;
 
 @Getter
 public abstract class Product {
-    @NonNull
     private final UUID id;
-
-    @NonNull
     private String name;
-
-    @NonNull
     private BigDecimal price;
     private int availableQuantity;
 
@@ -46,16 +41,24 @@ public abstract class Product {
     }
 
     public void decreaseAvailableQuantity(int quantity) {
-        if (!hasAvailableQuantity(quantity)) {
-            throw new InsufficientStockException(id);
-        }
-
+        validateStockAvailability(quantity);
         availableQuantity -= quantity;
+    }
+
+    public void increaseAvailableQuantity(int quantity) {
+        validateRequestedQuantity(quantity);
+        availableQuantity += quantity;
     }
 
     public boolean hasAvailableQuantity(int quantity) {
         validateRequestedQuantity(quantity);
         return availableQuantity >= quantity;
+    }
+
+    private void validateStockAvailability(int quantity) {
+        if (!hasAvailableQuantity(quantity)) {
+            throw new InsufficientStockException(id);
+        }
     }
 
     private static void validateRequestedQuantity(int quantity) {

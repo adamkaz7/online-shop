@@ -16,23 +16,17 @@ public class ProductManager {
     private final ProductRepository productRepository;
 
     public void addProduct(@NonNull Product product) {
-        if (productRepository.existsById(product.getId())) {
-            throw new ProductAlreadyExistsException(product.getId());
-        }
+        validateProductDoesNotExist(product.getId());
         productRepository.save(product);
     }
 
     public void updateProduct(@NonNull Product product) {
-        if (!productRepository.existsById(product.getId())) {
-            throw new ProductNotFoundException(product.getId());
-        }
+        validateProductExists(product.getId());
         productRepository.save(product);
     }
 
     public void removeProduct(@NonNull UUID id) {
-        if (!productRepository.existsById(id)) {
-            throw new ProductNotFoundException(id);
-        }
+        validateProductExists(id);
         productRepository.deleteById(id);
     }
 
@@ -43,5 +37,17 @@ public class ProductManager {
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
+    }
+
+    private void validateProductExists(UUID id) {
+        if (!productRepository.existsById(id)) {
+            throw new ProductNotFoundException(id);
+        }
+    }
+
+    private void validateProductDoesNotExist(UUID id) {
+        if (productRepository.existsById(id)) {
+            throw new ProductAlreadyExistsException(id);
+        }
     }
 }

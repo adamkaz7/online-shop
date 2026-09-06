@@ -59,12 +59,11 @@ public class InvoiceGeneratorTest {
     }
 
     @Test
-    @DisplayName("Should generate invoice for completed order")
-    void shouldGenerateInvoiceForCompletedOrder() {
+    @DisplayName("Should generate invoice for processing order")
+    void shouldGenerateInvoiceForProcessingOrder() {
         // Arrange
         Order order = createOrder();
         order.markAsProcessing();
-        order.complete();
 
         // Act
         Invoice invoice = invoiceGenerator.generate(order);
@@ -82,15 +81,15 @@ public class InvoiceGeneratorTest {
     }
 
     @Test
-    @DisplayName("Should reject order that is not completed")
-    void shouldRejectOrderThatIsNotCompleted() {
+    @DisplayName("Should reject order that is not processing")
+    void shouldRejectOrderThatIsNotProcessing() {
         // Arrange
         Order order = createOrder();
 
         // Act + Assert
         Assertions.assertThatThrownBy(() -> invoiceGenerator.generate(order))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Order status must be COMPLETED");
+                .hasMessage("Order status must be PROCESSING");
     }
 
     @Test
@@ -106,7 +105,6 @@ public class InvoiceGeneratorTest {
 
         order.applyPromotion(promotion);
         order.markAsProcessing();
-        order.complete();
 
         // Act
         Invoice invoice = invoiceGenerator.generate(order);

@@ -23,13 +23,8 @@ public class Computer extends Product {
             List<Integer> availableRam) {
         super(id, name, price, availableQuantity);
 
-        if (availableProcessors == null || availableProcessors.isEmpty()) {
-            throw new IllegalArgumentException("Available processors cannot be empty");
-        }
-
-        if (availableRam == null || availableRam.isEmpty()) {
-            throw new IllegalArgumentException("Available RAM cannot be empty");
-        }
+        validateAvailableProcessors(availableProcessors);
+        validateAvailableRam(availableRam);
 
         this.availableProcessors = List.copyOf(availableProcessors);
         this.availableRam = List.copyOf(availableRam);
@@ -37,17 +32,36 @@ public class Computer extends Product {
         this.selectedRam = availableRam.getFirst();
     }
 
-    public void configure(String processor, int ram) {
-        if (!availableProcessors.contains(processor)) {
-            throw new IllegalArgumentException("Processor " + processor + " is not available for this computer");
+    private static void validateAvailableProcessors(List<String> availableProcessors) {
+        if (availableProcessors == null || availableProcessors.isEmpty()) {
+            throw new IllegalArgumentException("Available processors cannot be empty");
         }
+    }
 
-        if (!availableRam.contains(ram)) {
-            throw new IllegalArgumentException("RAM option " + ram + " GB is not available for this computer");
+    private static void validateAvailableRam(List<Integer> availableRam) {
+        if (availableRam == null || availableRam.isEmpty()) {
+            throw new IllegalArgumentException("Available RAM cannot be empty");
         }
+    }
+
+    public void configure(String processor, int ram) {
+        validateProcessor(processor);
+        validateRam(ram);
 
         this.selectedProcessor = processor;
         this.selectedRam = ram;
+    }
+
+    private void validateProcessor(String processor) {
+        if (!availableProcessors.contains(processor)) {
+            throw new IllegalArgumentException("Processor " + processor + " is not available for this computer");
+        }
+    }
+
+    private void validateRam(int ram) {
+        if (!availableRam.contains(ram)) {
+            throw new IllegalArgumentException("RAM option " + ram + " GB is not available for this computer");
+        }
     }
 
     @Override

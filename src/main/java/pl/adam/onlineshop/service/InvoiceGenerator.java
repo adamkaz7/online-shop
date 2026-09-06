@@ -21,9 +21,7 @@ public class InvoiceGenerator {
     }
 
     public Invoice generate(@NonNull Order order) {
-        if (order.getStatus() != OrderStatus.COMPLETED) {
-            throw new IllegalStateException("Order status must be COMPLETED");
-        }
+        validateOrderStatus(order);
 
         return Invoice.builder()
                 .invoiceId(UUID.randomUUID())
@@ -36,5 +34,11 @@ public class InvoiceGenerator {
                 .totalAmount(order.getTotalAmount())
                 .issuedAt(Instant.now(clock))
                 .build();
+    }
+
+    private static void validateOrderStatus(Order order) {
+        if (order.getStatus() != OrderStatus.PROCESSING) {
+            throw new IllegalStateException("Order status must be PROCESSING");
+        }
     }
 }

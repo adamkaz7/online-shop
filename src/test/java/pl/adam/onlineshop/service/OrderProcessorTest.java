@@ -26,7 +26,12 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class OrderProcessorTest {
@@ -201,6 +206,50 @@ public class OrderProcessorTest {
     }
 
     @Test
+    @DisplayName("Should restore stock when invoice generation fails")
+    public void shouldRestoreStockWhenInvoiceGenerationFails() {
+        // Arrange
+        Product product = createProduct(
+                FIRST_PRODUCT_ID,
+                "Gaming Laptop",
+                "299.99",
+                5
+        );
+
+        Order order = createOrder(List.of(createOrderItem(product, 2)));
+
+        InvoiceGenerator failingInvoiceGenerator = mock(InvoiceGenerator.class);
+
+        OrderProcessor failingOrderProcessor = new OrderProcessor(
+                productRepository,
+                orderRepository,
+                invoiceRepository,
+                failingInvoiceGenerator
+        );
+
+        when(productRepository.findById(FIRST_PRODUCT_ID))
+                .thenReturn(Optional.of(product));
+
+        when(failingInvoiceGenerator.generate(order))
+                .thenThrow(new IllegalStateException(
+                        "Invoice generation failed"
+                ));
+
+        // Act + Assert
+        assertThatThrownBy(() -> failingOrderProcessor.process(order))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Invoice generation failed");
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+        assertThat(product.getAvailableQuantity()).isEqualTo(5);
+
+        verify(productRepository, times(2)).save(product);
+        verify(failingInvoiceGenerator).generate(order);
+        verify(invoiceRepository, never()).save(any(Invoice.class));
+        verify(orderRepository).save(order);
+    }
+
+    @Test
     @DisplayName("Should reject order that is not NEW")
     public void shouldRejectOrderThatIsNotNew() {
         // Arrange
@@ -220,7 +269,7 @@ public class OrderProcessorTest {
         // Act + Assert
         assertThatThrownBy(() -> orderProcessor.process(order))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Only NEW order can be processed");
+                .hasMessageContaining("Cannot change order status from PROCESSING to PROCESSING");
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.PROCESSING);
         assertThat(product.getAvailableQuantity()).isEqualTo(5);

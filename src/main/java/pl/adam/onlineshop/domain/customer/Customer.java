@@ -10,13 +10,8 @@ public class Customer {
     private final String fullName;
 
     public Customer(UUID id, String fullName) {
-        if (id == null) {
-            throw new IllegalArgumentException("Customer id must not be null");
-        }
-
-        if (fullName == null || fullName.isBlank()) {
-            throw new IllegalArgumentException("Customer full name must not be blank");
-        }
+        validateId(id);
+        validateFullName(fullName);
 
         this.id = id;
         this.fullName = fullName;
@@ -29,5 +24,17 @@ public class Customer {
                 fullName,
                 id
         );
+    }
+
+    private static void validateId(UUID id) {
+        if (id == null) {
+            throw new IllegalArgumentException("Customer id must not be null");
+        }
+    }
+
+    private static void validateFullName(String fullName) {
+        if (fullName == null || fullName.isBlank()) {
+            throw new IllegalArgumentException("Customer full name must not be blank");
+        }
     }
 }

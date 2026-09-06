@@ -22,10 +22,10 @@ public class Cart {
         Optional<CartItem> existingItem = findItemByProductId(product.getId());
         if (existingItem.isPresent()) {
             existingItem.get().increaseQuantity(quantity);
-            return;
+        } else {
+            CartItem item = new CartItem(product, quantity);
+            items.add(item);
         }
-        CartItem item = new CartItem(product, quantity);
-        items.add(item);
     }
 
     public void removeProduct(@NonNull UUID productId) {

@@ -243,6 +243,49 @@ public class OrderTest {
     }
 
     @Test
+    @DisplayName("Should reject completing NEW order")
+    void shouldRejectCompletingNewOrder() {
+        // Arrange
+        Order order = createOrder();
+
+        // Act + Assert
+        assertThatThrownBy(order::complete)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Cannot change order status from NEW to COMPLETED");
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.NEW);
+    }
+
+    @Test
+    @DisplayName("Should reject cancelling NEW order")
+    void shouldRejectCancellingNewOrder() {
+        // Arrange
+        Order order = createOrder();
+
+        // Act + Assert
+        assertThatThrownBy(order::cancel)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Cannot change order status from NEW to CANCELLED");
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.NEW);
+    }
+
+    @Test
+    @DisplayName("Should reject marking PROCESSING order as processing again")
+    void shouldRejectMarkingProcessingOrderAsProcessing() {
+        // Arrange
+        Order order = createOrder();
+        order.markAsProcessing();
+
+        // Act + Assert
+        assertThatThrownBy(order::markAsProcessing)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Cannot change order status from PROCESSING to PROCESSING");
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.PROCESSING);
+    }
+
+    @Test
     @DisplayName("Should apply promotion to order")
     void shouldApplyPromotion() {
         // Arrange

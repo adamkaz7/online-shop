@@ -21,12 +21,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @Slf4j
 public class OrderBatchProcessorTest {
@@ -82,11 +80,11 @@ public class OrderBatchProcessorTest {
         );
 
         // Act
-        List<Invoice> invoices;
+        List<OrderResult> results;
 
         try (OrderBatchProcessor batchProcessor = new OrderBatchProcessor(orderProcessor, 4)) {
-            CompletableFuture<List<Invoice>> future = batchProcessor.processAsync(orders);
-            invoices = future.join();
+            CompletableFuture<List<OrderResult>> future = batchProcessor.processAsync(orders);
+            results = future.join();
         }
 
         // Assert
@@ -97,6 +95,8 @@ public class OrderBatchProcessorTest {
         assertThat(product.getAvailableQuantity()).isEqualTo(2);
         assertThat(orderRepository.findAll()).containsExactlyInAnyOrderElementsOf(orders);
         assertThat(invoiceRepository.findAll()).hasSize(4);
+        assertThat(results).hasSize(4).allMatch(OrderResult::isSuccess);
+        assertThat(results).extracting(OrderResult::order).containsExactlyElementsOf(orders);
     }
 
     @Test
@@ -114,16 +114,37 @@ public class OrderBatchProcessorTest {
                 secondOrder
         );
 
-        // Act + Assert
+        // Act
+        List<OrderResult> results;
+
         try (OrderBatchProcessor batchProcessor = new OrderBatchProcessor(orderProcessor, 3)) {
-            assertThatThrownBy(() -> batchProcessor.processAsync(orders).join())
-                    .isInstanceOf(CompletionException.class)
-                    .hasCauseInstanceOf(InsufficientStockException.class);
+            results = batchProcessor.processAsync(orders).join();
         }
+
+        assertThat(results).hasSize(2);
+
+        assertThat(results)
+                .filteredOn(OrderResult::isSuccess)
+                        .singleElement()
+                                .satisfies(result -> {
+                                    assertThat(result.invoice()).isNotNull();
+                                    assertThat(result.error()).isNull();
+                                    assertThat(result.order().getStatus()).isEqualTo(OrderStatus.COMPLETED);
+                                });
+
+        assertThat(results)
+                .filteredOn(result -> !result.isSuccess())
+                .singleElement()
+                .satisfies(result -> {
+                    assertThat(result.invoice()).isNull();
+                    assertThat(result.error())
+                            .isInstanceOf(InsufficientStockException.class);
+                    assertThat(result.order().getStatus()).isEqualTo(OrderStatus.CANCELLED);
+                });
 
         assertThat(orders)
                 .extracting(Order::getStatus)
-                .containsExactlyInAnyOrder(OrderStatus.COMPLETED, OrderStatus.CANCELLED);
+                        .containsExactlyInAnyOrder(OrderStatus.COMPLETED, OrderStatus.CANCELLED);
 
         assertThat(product.getAvailableQuantity()).isZero();
         assertThat(orderRepository.findAll()).containsExactlyInAnyOrder(firstOrder, secondOrder);
@@ -144,10 +165,10 @@ public class OrderBatchProcessorTest {
         // Act - sync
         long syncStart = System.nanoTime();
 
-        List<Invoice> syncInvoices;
+        List<OrderResult> syncResults;
 
         try (OrderBatchProcessor batchProcessor = new OrderBatchProcessor(orderProcessor, 4)) {
-            syncInvoices = batchProcessor.processSync(syncOrders);
+            syncResults = batchProcessor.processSync(syncOrders);
         }
 
         long syncDuration = System.nanoTime() - syncStart;
@@ -162,18 +183,15 @@ public class OrderBatchProcessorTest {
 
         // Act - async
         long asyncStart = System.nanoTime();
-        List<Invoice> asyncInvoices;
+        List<OrderResult> asyncResults;
 
         try (OrderBatchProcessor batchProcessor = new OrderBatchProcessor(orderProcessor, 4)) {
-            asyncInvoices = batchProcessor.processAsync(asyncOrders).join();
+            asyncResults = batchProcessor.processAsync(asyncOrders).join();
         }
 
         long asyncDuration = System.nanoTime() - asyncStart;
 
         // Assert
-        assertThat(syncInvoices).hasSize(ORDER_COUNT);
-        assertThat(asyncInvoices).hasSize(ORDER_COUNT);
-
         log.info("Should process orders faster asynchronously:");
         log.info("Synchronous: {} ms, asynchronous: {} ms",
                 TimeUnit.NANOSECONDS.toMillis(syncDuration),
@@ -181,6 +199,8 @@ public class OrderBatchProcessorTest {
         );
 
         assertThat(asyncDuration).isLessThan(syncDuration / 2);
+        assertThat(syncResults).hasSize(ORDER_COUNT).allMatch(OrderResult::isSuccess);
+        assertThat(asyncResults).hasSize(ORDER_COUNT).allMatch(OrderResult::isSuccess);
     }
 
     private Product createProduct(int availableQuantity) {
