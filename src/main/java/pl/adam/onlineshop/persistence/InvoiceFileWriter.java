@@ -11,14 +11,19 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 public class InvoiceFileWriter {
     private static final String FILE_PREFIX = "invoice-";
     private static final String FILE_EXTENSION = ".txt";
 
+    private static final ZoneId SHOP_ZONE = ZoneId.of("Europe/Warsaw");
+
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            DateTimeFormatter
+                    .ofPattern("yyyy-MM-dd HH:mm:ss XXX VV")
+                    .withZone(SHOP_ZONE);
 
     private final Path invoiceDirectory;
 
@@ -71,7 +76,7 @@ public class InvoiceFileWriter {
         writer.write("Customer: " + invoice.getCustomer());
         writer.newLine();
 
-        writer.write("Issued at: " + invoice.getIssuedAt().format(DATE_TIME_FORMATTER));
+        writer.write("Issued at: " + DATE_TIME_FORMATTER.format(invoice.getIssuedAt()));
         writer.newLine();
 
         writer.write("Items:");

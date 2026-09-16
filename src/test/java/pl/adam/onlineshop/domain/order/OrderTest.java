@@ -6,7 +6,9 @@ import pl.adam.onlineshop.domain.customer.Customer;
 import pl.adam.onlineshop.domain.promotion.Promotion;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -39,6 +41,10 @@ public class OrderTest {
     }
 
     private Order createOrder() {
+        return createOrder(Clock.systemUTC());
+    }
+
+    private Order createOrder(Clock clock) {
         return new Order(
                 ORDER_ID,
                 createCustomer(),
@@ -47,7 +53,8 @@ public class OrderTest {
                         "Gaming Laptop",
                         "199.99",
                         2
-                ))
+                )),
+                clock
         );
     }
 
@@ -182,15 +189,15 @@ public class OrderTest {
     @DisplayName("Should create order with NEW status and order date")
     void shouldCreateOrderWithNewStatusAndOrderDate() {
         // Arrange
-        LocalDateTime beforeCreation = LocalDateTime.now();
+        Instant instant = Instant.parse("2026-08-02T10:00:00Z");
+        Clock clock = Clock.fixed(instant, ZoneOffset.UTC);
 
         // Act
-        Order order = createOrder();
-        LocalDateTime afterCreation = LocalDateTime.now();
+        Order order = createOrder(clock);
 
         // Assert
         assertThat(order.getStatus()).isEqualTo(OrderStatus.NEW);
-        assertThat(order.getOrderDate()).isBetween(beforeCreation, afterCreation);
+        assertThat(order.getOrderDate()).isEqualTo(instant);
     }
 
     @Test

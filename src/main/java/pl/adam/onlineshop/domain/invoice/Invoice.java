@@ -7,7 +7,8 @@ import pl.adam.onlineshop.domain.order.OrderItem;
 import pl.adam.onlineshop.domain.promotion.Promotion;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
@@ -15,7 +16,12 @@ import java.util.stream.Collectors;
 
 @Getter
 public class Invoice {
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final ZoneId SHOP_ZONE = ZoneId.of("Europe/Warsaw");
+
+    private static final DateTimeFormatter DATE_TIME_FORMATTER =
+            DateTimeFormatter
+                    .ofPattern("yyyy-MM-dd HH:mm:ss XXX VV")
+                    .withZone(SHOP_ZONE);
 
     private final UUID invoiceId;
     private final UUID orderId;
@@ -25,7 +31,7 @@ public class Invoice {
     private final Promotion promotion;
     private final BigDecimal discountAmount;
     private final BigDecimal totalAmount;
-    private final LocalDateTime issuedAt;
+    private final Instant issuedAt;
 
     public Invoice(
             @NonNull UUID invoiceId,
@@ -33,7 +39,7 @@ public class Invoice {
             @NonNull Customer customer,
             @NonNull List<OrderItem> items,
             @NonNull BigDecimal totalAmount,
-            @NonNull LocalDateTime issuedAt
+            @NonNull Instant issuedAt
     ) {
         this(
                 invoiceId,
@@ -57,7 +63,7 @@ public class Invoice {
             Promotion promotion,
             @NonNull BigDecimal discountAmount,
             @NonNull BigDecimal totalAmount,
-            @NonNull LocalDateTime issuedAt
+            @NonNull Instant issuedAt
     ) {
         this.invoiceId = invoiceId;
         this.orderId = orderId;
@@ -99,7 +105,7 @@ public class Invoice {
                 invoiceId,
                 orderId,
                 customer,
-                issuedAt.format(DATE_TIME_FORMATTER),
+                DATE_TIME_FORMATTER.format(issuedAt),
                 formattedItems,
                 subtotalAmount,
                 promotionDescription,

@@ -8,7 +8,7 @@ import pl.adam.onlineshop.domain.invoice.Invoice;
 import pl.adam.onlineshop.domain.order.OrderItem;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -44,6 +44,8 @@ public class InMemoryInvoiceRepositoryTest {
             "00000000-0000-0000-0000-000000000999"
     );
 
+    private static final Instant ISSUED_AT = Instant.parse("2026-08-02T10:00:00Z");
+
     private InMemoryInvoiceRepository invoiceRepository;
     private Invoice invoice;
 
@@ -72,7 +74,7 @@ public class InMemoryInvoiceRepositoryTest {
                 customer,
                 List.of(item),
                 item.calculateSubtotal(),
-                LocalDateTime.now()
+                ISSUED_AT
         );
     }
 
