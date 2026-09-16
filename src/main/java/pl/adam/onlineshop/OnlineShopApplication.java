@@ -7,11 +7,13 @@ import pl.adam.onlineshop.domain.customer.Customer;
 import pl.adam.onlineshop.domain.product.Computer;
 import pl.adam.onlineshop.domain.product.Electronics;
 import pl.adam.onlineshop.domain.product.Smartphone;
+import pl.adam.onlineshop.domain.promotion.Promotion;
 import pl.adam.onlineshop.persistence.InvoiceFileWriter;
 import pl.adam.onlineshop.repository.*;
 import pl.adam.onlineshop.service.InvoiceGenerator;
 import pl.adam.onlineshop.service.OrderProcessor;
 import pl.adam.onlineshop.service.ProductManager;
+import pl.adam.onlineshop.service.PromotionService;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;
@@ -24,6 +26,11 @@ public class OnlineShopApplication {
         OrderRepository orderRepository = new InMemoryOrderRepository();
         InvoiceRepository invoiceRepository = new InMemoryInvoiceRepository();
         ProductManager productManager = new ProductManager(productRepository);
+
+        PromotionService promotionService = new PromotionService(
+                List.of(new Promotion("SAVE10", new BigDecimal("10")))
+        );
+
         InvoiceGenerator invoiceGenerator = new InvoiceGenerator();
 
         OrderProcessor orderProcessor = new OrderProcessor(
@@ -52,6 +59,7 @@ public class OnlineShopApplication {
         ShopCli shopCli = new ShopCli(
                 productManager,
                 orderProcessor,
+                promotionService,
                 invoiceFileWriter,
                 customer,
                 cart,

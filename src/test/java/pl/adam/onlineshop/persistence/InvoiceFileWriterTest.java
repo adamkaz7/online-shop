@@ -7,6 +7,7 @@ import org.junit.jupiter.api.io.TempDir;
 import pl.adam.onlineshop.domain.customer.Customer;
 import pl.adam.onlineshop.domain.invoice.Invoice;
 import pl.adam.onlineshop.domain.order.OrderItem;
+import pl.adam.onlineshop.domain.promotion.Promotion;
 import pl.adam.onlineshop.exception.InvoiceFileException;
 
 import java.io.IOException;
@@ -90,8 +91,13 @@ public class InvoiceFileWriterTest {
                 "Gaming Laptop",
                 "Quantity: 2",
                 "Subtotal: 399.98 zł",
+                "Subtotal amount: 399.98 zł",
+                "Promotion: none",
+                "Discount: 0.00 zł",
                 "Total amount: 399.98 zł"
         );
+
+        assertThat(content).containsOnlyOnce("Total amount: 399.98 zł");
     }
 
     @Test
@@ -195,6 +201,34 @@ public class InvoiceFileWriterTest {
                 .hasCauseInstanceOf(IOException.class);
     }
 
+    @Test
+    @DisplayName("Should write promotion details to invoice file")
+    public void shouldWritePromotionDetailsToInvoiceFile() throws IOException {
+        // Arrange
+        Invoice discountInvoice = createInvoiceWithPromotion(
+                INVOICE_ID,
+                ORDER_ID,
+                "Gaming Laptop",
+                "199.99",
+                2
+        );
+
+        // Act
+        Path result = invoiceFileWriter.write(discountInvoice);
+
+        // Assert
+        String content = Files.readString(result, StandardCharsets.UTF_8);
+
+        assertThat(content).contains(
+                "Subtotal amount: 399.98 zł",
+                "Promotion: SAVE10 (10%)",
+                "Discount: 40.00 zł",
+                "Total amount: 359.98 zł"
+        );
+
+        assertThat(content).containsOnlyOnce("Total amount: 359.98 zł");
+    }
+
     private Invoice createInvoice(
             UUID invoiceId,
             UUID orderId,
@@ -220,6 +254,47 @@ public class InvoiceFileWriterTest {
                 customer,
                 List.of(item),
                 item.calculateSubtotal(),
+                LocalDateTime.of(2026, 7, 31, 12, 0)
+        );
+    }
+
+    private Invoice createInvoiceWithPromotion(
+            UUID invoiceId,
+            UUID orderId,
+            String productName,
+            String unitPrice,
+            int quantity
+    ) {
+        Customer customer = new Customer(
+                CUSTOMER_ID,
+                "Jan Kowalski"
+        );
+
+        OrderItem item = new OrderItem(
+                PRODUCT_ID,
+                productName,
+                new BigDecimal(unitPrice),
+                quantity
+        );
+
+        Promotion promotion = new Promotion(
+                "SAVE10",
+                new BigDecimal("10")
+        );
+
+        BigDecimal subtotalAmount = item.calculateSubtotal();
+        BigDecimal discountAmount = promotion.calculateDiscount(subtotalAmount);
+        BigDecimal totalAmount = subtotalAmount.subtract(discountAmount);
+
+        return new Invoice(
+                invoiceId,
+                orderId,
+                customer,
+                List.of(item),
+                subtotalAmount,
+                promotion,
+                discountAmount,
+                totalAmount,
                 LocalDateTime.of(2026, 7, 31, 12, 0)
         );
     }

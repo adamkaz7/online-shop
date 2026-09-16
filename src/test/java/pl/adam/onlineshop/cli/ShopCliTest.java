@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pl.adam.onlineshop.domain.cart.Cart;
@@ -12,11 +13,14 @@ import pl.adam.onlineshop.domain.invoice.Invoice;
 import pl.adam.onlineshop.domain.order.Order;
 import pl.adam.onlineshop.domain.product.Electronics;
 import pl.adam.onlineshop.domain.product.Product;
+import pl.adam.onlineshop.domain.promotion.Promotion;
 import pl.adam.onlineshop.exception.InsufficientStockException;
 import pl.adam.onlineshop.exception.InvoiceFileException;
+import pl.adam.onlineshop.exception.PromotionNotFoundException;
 import pl.adam.onlineshop.persistence.InvoiceFileWriter;
 import pl.adam.onlineshop.service.OrderProcessor;
 import pl.adam.onlineshop.service.ProductManager;
+import pl.adam.onlineshop.service.PromotionService;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -35,6 +39,8 @@ public class ShopCliTest {
             "invoices",
             "invoice-test.txt");
 
+    private static final String PROMOTION = "Enter promotion code or press enter to skip: ";
+
     private static final UUID CUSTOMER_ID = UUID.fromString(
             "00000000-0000-0000-0000-000000000001"
     );
@@ -48,6 +54,9 @@ public class ShopCliTest {
 
     @Mock
     private OrderProcessor orderProcessor;
+
+    @Mock
+    private PromotionService promotionService;
 
     @Mock
     private ConsoleReader consoleReader;
@@ -81,6 +90,7 @@ public class ShopCliTest {
         shopCli = new ShopCli(
                 productManager,
                 orderProcessor,
+                promotionService,
                 invoiceFileWriter,
                 customer,
                 cart,
@@ -127,8 +137,8 @@ public class ShopCliTest {
         cart.addProduct(product, 2);
 
         when(consoleReader.readInt("Select option: ")).thenReturn(4, 0);
-
         when(invoiceFileWriter.write(invoice)).thenReturn(INVOICE_PATH);
+        when(consoleReader.readLine(PROMOTION)).thenReturn("");
 
         when(orderProcessor.process(any(Order.class)))
                 .thenAnswer(invocation -> {
@@ -155,6 +165,7 @@ public class ShopCliTest {
 
         when(consoleReader.readInt("Select option: ")).thenReturn(4, 0);
         when(orderProcessor.process(any(Order.class))).thenThrow(new InsufficientStockException(PRODUCT_ID));
+        when(consoleReader.readLine(PROMOTION)).thenReturn("");
 
         // Act
         shopCli.run();
@@ -172,8 +183,9 @@ public class ShopCliTest {
         cart.addProduct(product, 2);
 
         when(consoleReader.readInt("Select option: ")).thenReturn(4, 0);
+        when(consoleReader.readLine(PROMOTION)).thenReturn("");
         when(orderProcessor.process(any(Order.class)))
-                .thenAnswer(invocation ->  {
+                .thenAnswer(invocation -> {
                     Order order = invocation.getArgument(0);
                     order.markAsProcessing();
                     order.complete();
@@ -193,5 +205,63 @@ public class ShopCliTest {
         assertThat(cart.isEmpty()).isTrue();
         verify(orderProcessor).process(any(Order.class));
         verify(invoiceFileWriter).write(invoice);
+    }
+
+    @Test
+    @DisplayName("Should apply promotion when placing order")
+    public void shouldApplyPromotionWhenPlacingOrder() {
+        // Arrange
+        cart.addProduct(product, 2);
+
+        Promotion promotion = new Promotion(
+                "SAVE10",
+                new BigDecimal("10")
+        );
+
+        when(consoleReader.readInt("Select option: ")).thenReturn(4, 0);
+        when(consoleReader.readLine(PROMOTION)).thenReturn("SAVE10");
+        when(promotionService.findPromotionByCode("SAVE10")).thenReturn(promotion);
+
+        when(orderProcessor.process(any(Order.class)))
+                .thenAnswer(invocation -> {
+                    Order order = invocation.getArgument(0);
+                    order.markAsProcessing();
+                    order.complete();
+                    return invoice;
+                });
+
+        when(invoiceFileWriter.write(invoice)).thenReturn(INVOICE_PATH);
+
+        // Act
+        shopCli.run();
+
+        // Assert
+        ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+        verify(orderProcessor).process(orderCaptor.capture());
+        Order processedOrder = orderCaptor.getValue();
+        assertThat(processedOrder.hasPromotion()).isTrue();
+        assertThat(processedOrder.getAppliedPromotion()).isSameAs(promotion);
+        assertThat(processedOrder.getDiscountAmount()).isEqualByComparingTo(new BigDecimal("40.00"));
+        assertThat(processedOrder.getTotalAmount()).isEqualByComparingTo(new BigDecimal("359.98"));
+        verify(promotionService).findPromotionByCode("SAVE10");
+    }
+
+    @Test
+    @DisplayName("Should keep cart when promotion code does not exist")
+    public void shouldKeepCartWhenPromotionCodeDoesNotExist() {
+        // Arrange
+        cart.addProduct(product, 2);
+        when(consoleReader.readInt("Select option: ")).thenReturn(4, 0);
+        when(consoleReader.readLine(PROMOTION)).thenReturn("MISSING");
+
+        when(promotionService.findPromotionByCode("MISSING"))
+                .thenThrow(new PromotionNotFoundException("MISSING"));
+
+        // Act
+        shopCli.run();
+
+        // Assert
+        assertThat(cart.isEmpty()).isFalse();
+        verify(promotionService).findPromotionByCode("MISSING");
     }
 }

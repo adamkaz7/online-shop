@@ -83,6 +83,22 @@ public class InvoiceFileWriter {
         }
         writer.newLine();
 
+        writer.write("Subtotal amount: " + invoice.getSubtotalAmount() + " zł");
+        writer.newLine();
+
+        String promotionDescription = invoice.hasPromotion()
+                ? invoice.getPromotion().getCode()
+                  + " ("
+                  + invoice.getPromotion().getDiscountPercentage()
+                  + "%)"
+                : "none";
+
+        writer.write("Promotion: " + promotionDescription);
+        writer.newLine();
+
+        writer.write("Discount: " + invoice.getDiscountAmount() + " zł");
+        writer.newLine();
+
         writer.write("Total amount: " + invoice.getTotalAmount() + " zł");
         writer.newLine();
     }

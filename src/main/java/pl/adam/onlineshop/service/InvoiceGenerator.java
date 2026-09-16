@@ -19,6 +19,9 @@ public class InvoiceGenerator {
                 order.getOrderId(),
                 order.getCustomer(),
                 order.getItems(),
+                order.getSubtotalAmount(),
+                order.getAppliedPromotion(),
+                order.getDiscountAmount(),
                 order.getTotalAmount(),
                 LocalDateTime.now()
         );

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import pl.adam.onlineshop.domain.customer.Customer;
 import pl.adam.onlineshop.domain.order.OrderItem;
+import pl.adam.onlineshop.domain.promotion.Promotion;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,6 +21,9 @@ public class Invoice {
     private final UUID orderId;
     private final Customer customer;
     private final List<OrderItem> items;
+    private final BigDecimal subtotalAmount;
+    private final Promotion promotion;
+    private final BigDecimal discountAmount;
     private final BigDecimal totalAmount;
     private final LocalDateTime issuedAt;
 
@@ -31,12 +35,43 @@ public class Invoice {
             @NonNull BigDecimal totalAmount,
             @NonNull LocalDateTime issuedAt
     ) {
+        this(
+                invoiceId,
+                orderId,
+                customer,
+                items,
+                totalAmount,
+                null,
+                BigDecimal.ZERO.setScale(2),
+                totalAmount,
+                issuedAt
+        );
+    }
+
+    public Invoice(
+            @NonNull UUID invoiceId,
+            @NonNull UUID orderId,
+            @NonNull Customer customer,
+            @NonNull List<OrderItem> items,
+            @NonNull BigDecimal subtotalAmount,
+            Promotion promotion,
+            @NonNull BigDecimal discountAmount,
+            @NonNull BigDecimal totalAmount,
+            @NonNull LocalDateTime issuedAt
+    ) {
         this.invoiceId = invoiceId;
         this.orderId = orderId;
         this.customer = customer;
         this.items = List.copyOf(items);
+        this.subtotalAmount = subtotalAmount;
+        this.promotion = promotion;
+        this.discountAmount = discountAmount;
         this.totalAmount = totalAmount;
         this.issuedAt = issuedAt;
+    }
+
+    public boolean hasPromotion() {
+        return promotion != null;
     }
 
     @Override
@@ -45,18 +80,30 @@ public class Invoice {
                 .map(item -> " - " + item)
                 .collect(Collectors.joining(System.lineSeparator()));
 
+        String promotionDescription = hasPromotion()
+                ? promotion.getCode()
+                  + " ("
+                  + promotion.getDiscountPercentage()
+                  + "%)" : "none";
+
         return String.format(
                 "Invoice ID: %s%n"
                         + "Order ID: %s%n"
                         + "Customer: %s%n"
                         + "Issued at: %s%n"
                         + "Items:%n%s%n"
+                        + "Subtotal amount: %s zł%n"
+                        + "Promotion: %s%n"
+                        + "Discount: %s zł%n"
                         + "Total amount: %s zł",
                 invoiceId,
                 orderId,
                 customer,
                 issuedAt.format(DATE_TIME_FORMATTER),
                 formattedItems,
+                subtotalAmount,
+                promotionDescription,
+                discountAmount,
                 totalAmount
         );
     }

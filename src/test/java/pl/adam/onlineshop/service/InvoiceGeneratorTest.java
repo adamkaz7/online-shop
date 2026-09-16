@@ -7,6 +7,7 @@ import pl.adam.onlineshop.domain.customer.Customer;
 import pl.adam.onlineshop.domain.invoice.Invoice;
 import pl.adam.onlineshop.domain.order.Order;
 import pl.adam.onlineshop.domain.order.OrderItem;
+import pl.adam.onlineshop.domain.promotion.Promotion;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -68,6 +69,9 @@ public class InvoiceGeneratorTest {
         assertThat(invoice.getOrderId()).isEqualTo(order.getOrderId());
         assertThat(invoice.getCustomer()).isEqualTo(order.getCustomer());
         assertThat(invoice.getItems()).containsExactlyElementsOf(order.getItems());
+        assertThat(invoice.getSubtotalAmount()).isEqualByComparingTo(order.getSubtotalAmount());
+        assertThat(invoice.hasPromotion()).isFalse();
+        assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(order.getDiscountAmount());
         assertThat(invoice.getTotalAmount()).isEqualByComparingTo(order.getTotalAmount());
         assertThat(invoice.getIssuedAt()).isBetween(beforeGeneration, afterGeneration);
     }
@@ -82,5 +86,31 @@ public class InvoiceGeneratorTest {
         Assertions.assertThatThrownBy(() -> invoiceGenerator.generate(order))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Order status must be COMPLETED");
+    }
+
+    @Test
+    @DisplayName("Should copy promotion details to invoice")
+    void shouldCopyPromotionDetailsToInvoice() {
+        // Arrange
+        Order order = createOrder();
+
+        Promotion promotion = new Promotion(
+                "SAVE10",
+                new BigDecimal("10")
+        );
+
+        order.applyPromotion(promotion);
+        order.markAsProcessing();
+        order.complete();
+
+        // Act
+        Invoice invoice = invoiceGenerator.generate(order);
+
+        // Assert
+        assertThat(invoice.hasPromotion()).isTrue();
+        assertThat(invoice.getPromotion()).isSameAs(promotion);
+        assertThat(invoice.getSubtotalAmount()).isEqualByComparingTo(order.getSubtotalAmount());
+        assertThat(invoice.getDiscountAmount()).isEqualByComparingTo(order.getDiscountAmount());
+        assertThat(invoice.getTotalAmount()).isEqualByComparingTo(order.getTotalAmount());
     }
 }
