@@ -1,12 +1,15 @@
 package pl.adam.onlineshop.cli;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.Scanner;
 
+@Slf4j
 public class ConsoleReader {
     private final Scanner scanner = new Scanner(System.in);
 
     public String readLine(String message) {
-        System.out.print(message);
+        log.info("{}", message);
         return scanner.nextLine().trim();
     }
 
@@ -16,8 +19,8 @@ public class ConsoleReader {
 
             try {
                 return Integer.parseInt(input);
-            } catch (NumberFormatException exception) {
-                System.out.println("Please enter a valid number.");
+            } catch (NumberFormatException ignored) {
+                log.warn("Please enter a valid number.");
             }
         }
     }

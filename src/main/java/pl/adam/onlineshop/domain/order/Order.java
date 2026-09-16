@@ -56,7 +56,7 @@ public class Order {
         this.orderId = orderId;
         this.customer = customer;
         this.items = List.copyOf(items);
-        this.subtotalAmount = this.calculateTotalAmount();
+        this.subtotalAmount = calculateSubtotalAmount();
         this.discountAmount = BigDecimal.ZERO.setScale(2);
         this.totalAmount = this.subtotalAmount;
         this.orderDate = Instant.now(clock);
@@ -76,7 +76,7 @@ public class Order {
         );
     }
 
-    private BigDecimal calculateTotalAmount() {
+    private BigDecimal calculateSubtotalAmount() {
         return items.stream()
                 .map(OrderItem::calculateSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);

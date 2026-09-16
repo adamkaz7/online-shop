@@ -1,6 +1,7 @@
 package pl.adam.onlineshop.service;
 
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+@Slf4j
 public class OrderBatchProcessorTest {
     private static final UUID CUSTOMER_ID = UUID.fromString(
             "00000000-0000-0000-0000-000000000001"
@@ -172,8 +174,8 @@ public class OrderBatchProcessorTest {
         assertThat(syncInvoices).hasSize(ORDER_COUNT);
         assertThat(asyncInvoices).hasSize(ORDER_COUNT);
 
-        System.out.println("Should process orders faster asynchronously: ");
-        System.out.printf("Synchronous: %d ms, asynchronous: %d ms%n",
+        log.info("Should process orders faster asynchronously:");
+        log.info("Synchronous: {} ms, asynchronous: {} ms",
                 TimeUnit.NANOSECONDS.toMillis(syncDuration),
                 TimeUnit.NANOSECONDS.toMillis(asyncDuration)
         );
