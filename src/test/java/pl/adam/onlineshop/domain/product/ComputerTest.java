@@ -5,16 +5,21 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ComputerTest {
+    private static final UUID PRODUCT_ID = UUID.fromString(
+            "00000000-0000-0000-0000-000000000001"
+    );
+
     @Test
     @DisplayName("Should create computer with provided product data and default configuration")
     void shouldCreateComputerWithProvidedProductDataAndDefaultConfiguration() {
         // Arrange
-        String id = "COM-001";
+        UUID id = PRODUCT_ID;
         String name = "Gaming Laptop";
         BigDecimal price = new BigDecimal("1999.99");
         int availableQuantity = 5;
@@ -46,7 +51,7 @@ class ComputerTest {
     void shouldConfigureComputerWithSelectedProcessorAndRam() {
         // Arrange
         Computer computer = new Computer(
-                "COM-001",
+                PRODUCT_ID,
                 "Gaming Laptop",
                 new BigDecimal("1999.99"),
                 5,
@@ -68,7 +73,7 @@ class ComputerTest {
     void shouldThrowExceptionWhenProcessorIsNotAvailable() {
         // Arrange
         Computer computer = new Computer(
-                "COM-001",
+                PRODUCT_ID,
                 "Gaming Laptop",
                 new BigDecimal("1999.99"),
                 5,
@@ -87,7 +92,7 @@ class ComputerTest {
     void shouldThrowExceptionWhenRamOptionIsNotAvailable() {
         // Arrange
         Computer computer = new Computer(
-                "COM-001",
+                PRODUCT_ID,
                 "Gaming Laptop",
                 new BigDecimal("1999.99"),
                 5,
@@ -105,7 +110,7 @@ class ComputerTest {
     @DisplayName("Should throw exception when processor list is empty")
     void shouldThrowExceptionWhenProcessorListIsEmpty() {
         // Arrange
-        String id = "COM-001";
+        UUID id = PRODUCT_ID;
         String name = "Gaming Laptop";
         BigDecimal price = new BigDecimal("1999.99");
         int availableQuantity = 5;

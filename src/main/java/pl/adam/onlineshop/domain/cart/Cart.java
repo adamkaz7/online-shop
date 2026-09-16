@@ -7,11 +7,12 @@ import pl.adam.onlineshop.exception.CartItemNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 public class Cart {
     private final List<CartItem> items = new ArrayList<>();
 
-    public Optional<CartItem> findItemByProductId(@NonNull String productId) {
+    public Optional<CartItem> findItemByProductId(@NonNull UUID productId) {
         return items.stream()
                 .filter(item -> item.getProduct().getId().equals(productId))
                 .findFirst();
@@ -27,14 +28,14 @@ public class Cart {
         items.add(item);
     }
 
-    public void removeProduct(@NonNull String productId) {
+    public void removeProduct(@NonNull UUID productId) {
         CartItem item = findItemByProductId(productId)
                 .orElseThrow(() -> new CartItemNotFoundException(productId));
 
         items.remove(item);
     }
 
-    public void changeQuantity(@NonNull String productId, int quantity) {
+    public void changeQuantity(@NonNull UUID productId, int quantity) {
         CartItem item = findItemByProductId(productId)
                 .orElseThrow(() -> new CartItemNotFoundException(productId));
         item.changeQuantity(quantity);

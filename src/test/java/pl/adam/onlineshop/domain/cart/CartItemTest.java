@@ -6,14 +6,19 @@ import pl.adam.onlineshop.domain.product.Electronics;
 import pl.adam.onlineshop.domain.product.Product;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class CartItemTest {
+    private static final UUID PRODUCT_ID = UUID.fromString(
+            "00000000-0000-0000-0000-000000000001"
+    );
+
     private Product createProduct() {
         return new Electronics(
-                "1",
+                PRODUCT_ID,
                 "Test electronics",
                 new BigDecimal("100.00"),
                 10

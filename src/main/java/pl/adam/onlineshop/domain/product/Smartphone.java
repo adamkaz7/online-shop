@@ -4,6 +4,7 @@ import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 public class Smartphone extends Product {
@@ -16,7 +17,7 @@ public class Smartphone extends Product {
     private List<String> selectedAccessories;
 
     public Smartphone(
-            String id,
+            UUID id,
             String name,
             BigDecimal price,
             int availableQuantity,

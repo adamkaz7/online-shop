@@ -6,11 +6,12 @@ import pl.adam.onlineshop.domain.customer.Customer;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @Getter
 public class Order {
     @NonNull
-    private final String orderId;
+    private final UUID orderId;
     @NonNull
     private final Customer customer;
     @NonNull
@@ -18,9 +19,9 @@ public class Order {
     @NonNull
     private final BigDecimal totalAmount;
 
-    public Order(@NonNull String orderId, @NonNull Customer customer, @NonNull List<OrderItem> items) {
-        if (orderId.isBlank()) {
-            throw new IllegalArgumentException("Order id must not be blank");
+    public Order(UUID orderId, @NonNull Customer customer, @NonNull List<OrderItem> items) {
+        if (orderId == null) {
+            throw new IllegalArgumentException("Order id must not be null");
         }
 
         if (items.isEmpty()) {
