@@ -5,14 +5,25 @@ import java.util.UUID;
 
 public record OrderItem(UUID productId, String productName, BigDecimal unitPrice, int quantity) {
     public OrderItem {
+        validateProductId(productId);
+        validateProductName(productName);
+        validateUnitPrice(unitPrice);
+        validateQuantity(quantity);
+    }
+
+    private static void validateProductId(UUID productId) {
         if (productId == null) {
             throw new IllegalArgumentException("Product id must not be null");
         }
+    }
 
+    private static void validateProductName(String productName) {
         if (productName == null || productName.isBlank()) {
             throw new IllegalArgumentException("Product name must not be blank");
         }
+    }
 
+    private static void validateUnitPrice(BigDecimal unitPrice) {
         if (unitPrice == null) {
             throw new IllegalArgumentException("Unit price must not be null");
         }
@@ -20,11 +31,12 @@ public record OrderItem(UUID productId, String productName, BigDecimal unitPrice
         if (unitPrice.signum() < 0) {
             throw new IllegalArgumentException("Unit price must not be negative");
         }
+    }
 
+    private static void validateQuantity(int quantity) {
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be positive");
         }
-
     }
 
     public BigDecimal calculateSubtotal() {

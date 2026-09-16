@@ -8,10 +8,7 @@ import java.util.Locale;
 
 @Getter
 public class Promotion {
-    @NonNull
     private final String code;
-
-    @NonNull
     private final DiscountPolicy discountPolicy;
 
     public Promotion(@NonNull String code, @NonNull DiscountPolicy discountPolicy) {

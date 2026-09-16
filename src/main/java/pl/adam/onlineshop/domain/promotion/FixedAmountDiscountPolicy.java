@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 public class FixedAmountDiscountPolicy implements DiscountPolicy {
-    @NonNull
     private final BigDecimal discountAmount;
 
     public FixedAmountDiscountPolicy(@NonNull BigDecimal discountAmount) {
@@ -16,9 +15,7 @@ public class FixedAmountDiscountPolicy implements DiscountPolicy {
 
     @Override
     public BigDecimal calculateDiscount(@NonNull BigDecimal amount) {
-        if (amount.signum() < 0) {
-            throw new IllegalArgumentException("Amount cannot be negative");
-        }
+        validateAmount(amount);
 
         BigDecimal calculatedDiscount = discountAmount;
 
@@ -32,6 +29,12 @@ public class FixedAmountDiscountPolicy implements DiscountPolicy {
     @Override
     public String getDescription() {
         return discountAmount + " zł";
+    }
+
+    private static void validateAmount(BigDecimal amount) {
+        if (amount.signum() < 0) {
+            throw new IllegalArgumentException("Amount cannot be negative");
+        }
     }
 
     private static void validateDiscountAmount(BigDecimal discountAmount) {

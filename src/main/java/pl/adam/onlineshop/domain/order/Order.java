@@ -8,6 +8,7 @@ import pl.adam.onlineshop.domain.promotion.Promotion;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -22,17 +23,11 @@ public class Order {
                     .ofPattern("yyyy-MM-dd HH:mm:ss XXX VV")
                     .withZone(SHOP_ZONE);
 
-    @NonNull
     private final UUID orderId;
-    @NonNull
     private final Customer customer;
-    @NonNull
     private final List<OrderItem> items;
-    @NonNull
     private final BigDecimal subtotalAmount;
-    @NonNull
     private BigDecimal discountAmount;
-    @NonNull
     private BigDecimal totalAmount;
 
     private Promotion appliedPromotion;
@@ -45,13 +40,8 @@ public class Order {
             @NonNull List<OrderItem> items,
             @NonNull Clock clock
     ) {
-        if (orderId == null) {
-            throw new IllegalArgumentException("Order id must not be null");
-        }
-
-        if (items.isEmpty()) {
-            throw new IllegalArgumentException("Order items must not be empty");
-        }
+        validateOrderId(orderId);
+        validateItems(items);
 
         this.orderId = orderId;
         this.customer = customer;
@@ -83,13 +73,7 @@ public class Order {
     }
 
     public void applyPromotion(@NonNull Promotion promotion) {
-        if (status != OrderStatus.NEW) {
-            throw new IllegalStateException("Promotion can only be applied to NEW order");
-        }
-
-        if (appliedPromotion != null) {
-            throw new IllegalStateException("Promotion has already been applied");
-        }
+        validatePromotionCanBeApplied();
 
         BigDecimal calculatedDiscount = promotion.calculateDiscount(subtotalAmount);
 
@@ -102,16 +86,56 @@ public class Order {
         return appliedPromotion != null;
     }
 
+    public LocalDateTime getOrderDateTime() {
+        return LocalDateTime.ofInstant(orderDate, SHOP_ZONE);
+    }
+
     public void markAsProcessing() {
+        validateStatusTransition(OrderStatus.NEW, OrderStatus.PROCESSING);
         this.status = OrderStatus.PROCESSING;
     }
 
     public void complete() {
+        validateStatusTransition(OrderStatus.PROCESSING, OrderStatus.COMPLETED);
         this.status = OrderStatus.COMPLETED;
     }
 
     public void cancel() {
+        validateStatusTransition(OrderStatus.PROCESSING, OrderStatus.CANCELLED);
         this.status = OrderStatus.CANCELLED;
+    }
+
+    private void validatePromotionCanBeApplied() {
+        if (status != OrderStatus.NEW) {
+            throw new IllegalStateException("Promotion can only be applied to NEW order");
+        }
+
+        if (appliedPromotion != null) {
+            throw new IllegalStateException("Promotion has already been applied");
+        }
+    }
+
+    private void validateStatusTransition(OrderStatus expectedStatus, OrderStatus newStatus) {
+        if (status != expectedStatus) {
+            throw new IllegalStateException(
+                    "Cannot change order status from "
+                            + status
+                            + " to "
+                            + newStatus
+            );
+        }
+    }
+
+    private static void validateOrderId(UUID orderId) {
+        if (orderId == null) {
+            throw new IllegalArgumentException("Order id must not be null");
+        }
+    }
+
+    private static void validateItems(List<OrderItem> items) {
+        if (items.isEmpty()) {
+            throw new IllegalArgumentException("Order items must not be empty");
+        }
     }
 
     @Override
@@ -131,7 +155,9 @@ public class Order {
                 orderId,
                 customer,
                 status,
-                DATE_TIME_FORMATTER.format(orderDate),
+                DATE_TIME_FORMATTER.format(
+                        getOrderDateTime().atZone(SHOP_ZONE)
+                ),
                 items.size(),
                 subtotalAmount,
                 promotionCode,

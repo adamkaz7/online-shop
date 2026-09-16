@@ -4,7 +4,6 @@ import lombok.NonNull;
 import pl.adam.onlineshop.domain.invoice.Invoice;
 import pl.adam.onlineshop.domain.order.Order;
 import pl.adam.onlineshop.domain.order.OrderItem;
-import pl.adam.onlineshop.domain.order.OrderStatus;
 import pl.adam.onlineshop.domain.product.Product;
 import pl.adam.onlineshop.exception.InsufficientStockException;
 import pl.adam.onlineshop.exception.ProductNotFoundException;
@@ -39,33 +38,39 @@ public class OrderProcessor {
     }
 
     public Invoice process(@NonNull Order order) {
-        if (order.getStatus() != OrderStatus.NEW) {
-            throw new IllegalStateException(
-                    "Only NEW order can be processed"
-            );
-        }
         order.markAsProcessing();
 
+        Map<UUID, Product> products = new HashMap<>();
+        boolean stockDecreased = false;
+        Invoice invoice;
+
         try {
-            Map<UUID, Product> products = findProducts(order);
+            products = findProducts(order);
 
             synchronized (stockLock) {
                 validateStock(order, products);
                 decreaseStock(order, products);
+                stockDecreased = true;
             }
 
-            order.complete();
-            orderRepository.save(order);
-
-            Invoice invoice = invoiceGenerator.generate(order);
+            invoice = invoiceGenerator.generate(order);
             invoiceRepository.save(invoice);
-
-            return invoice;
         } catch (RuntimeException exception) {
+            if (stockDecreased) {
+                synchronized (stockLock) {
+                    restoreStock(order, products);
+                }
+            }
+
             order.cancel();
             orderRepository.save(order);
             throw exception;
         }
+
+        order.complete();
+        orderRepository.save(order);
+
+        return invoice;
     }
 
     private Map<UUID, Product> findProducts(Order order) {
@@ -101,6 +106,15 @@ public class OrderProcessor {
             Product product = productsById.get(item.productId());
 
             product.decreaseAvailableQuantity(item.quantity());
+            productRepository.save(product);
+        }
+    }
+
+    private void restoreStock(Order order, Map<UUID, Product> productsById) {
+        for (OrderItem item : order.getItems()) {
+            Product product = productsById.get(item.productId());
+
+            product.increaseAvailableQuantity(item.quantity());
             productRepository.save(product);
         }
     }

@@ -59,7 +59,7 @@ table below presents the responsibilities of its main components.
 | `PromotionService`       | Finds configured promotion codes used during checkout                        | `Promotion`                                                                         |
 | `OrderProcessor`         | Coordinates stock validation, order completion and invoice creation          | `ProductRepository`, `OrderRepository`, `InvoiceRepository`, `InvoiceGenerator`     |
 | `OrderBatchProcessor`    | Processes groups of orders synchronously or asynchronously                   | `OrderProcessor`, `ExecutorService`                                                 |
-| `InvoiceGenerator`       | Creates an invoice from a completed order                                    | `Order`, `Invoice`                                                                  |
+| `InvoiceGenerator`       | Creates an invoice from a processing order                                   | `Order`, `Invoice`                                                                  |
 | `InvoiceFileWriter`      | Saves generated invoices as UTF-8 text files                                 | `Invoice`                                                                           |
 | `In-memory repositories` | Store products, customers, orders, and invoices during application execution | `Product`, `Customer`, `Order`, `Invoice`                                           |
 
@@ -124,12 +124,13 @@ a separate `CompletableFuture` for every order using `supplyAsync()` and submits
 thread pool managed by `ExecutorService`.
 
 `CompletableFuture.allOf()` combines all submitted tasks into one completion stage. After every task has finished,
-`thenApply()` and `join()` collect the generated invoices into a single list. The method returns
-`CompletableFuture<List<Invoice>>`, allowing the caller to decide when and how to wait for the final result.
+`thenApply()` and `join()` collect the individual order results. The method returns
+`CompletableFuture<List<OrderResult>>`. Each OrderResult contains the processed order and either a generated invoice
+or the error that occurred, so one failed order does not discard the result of the remaining orders.
 
 `OrderBatchProcessor` implements `AutoCloseable`, so it can be used with try-with-resources. Closing the processor
-calls `shutdown()` on the executor, preventing it from accepting new tasks and allowing already submitted tasks to
-finish.
+calls `shutdown()` and waits up to 30 seconds for submitted tasks to finish. If the executor does not terminate in time,
+`shutdownNow()` is called.
 
 Concurrent processing requires additional protection for shared data. The in-memory product, order and invoice
 repositories use `ConcurrentHashMap`. Stock validation and stock reduction are executed together inside a `synchronized`

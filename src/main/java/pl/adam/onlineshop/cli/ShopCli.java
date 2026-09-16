@@ -126,10 +126,33 @@ public class ShopCli {
         Product selectedProduct = products.get(productNumber - 1);
 
         try {
+            validateCartQuantity(selectedProduct, quantity);
+
             cart.addProduct(selectedProduct, quantity);
             log.info("Product added to cart.");
         } catch (IllegalArgumentException exception) {
             log.warn("Could not add product to cart: {}", exception.getMessage());
+        }
+    }
+
+    private void validateCartQuantity(Product product, int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be greater than zero.");
+        }
+
+        int quantityAlreadyInCart = cart
+                .findItemByProductId(product.getId())
+                .map(item -> item.getQuantity())
+                .orElse(0);
+
+        int totalRequestedQuantity = quantityAlreadyInCart + quantity;
+
+        if (!product.hasAvailableQuantity(totalRequestedQuantity)) {
+            throw new IllegalArgumentException(
+                    "Only "
+                    + product.getAvailableQuantity()
+                    + " items are available"
+            );
         }
     }
 

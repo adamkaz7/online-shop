@@ -6,7 +6,6 @@ import pl.adam.onlineshop.domain.product.Product;
 
 @Getter
 public class CartItem {
-    @NonNull
     private final Product product;
     private int quantity;
 
