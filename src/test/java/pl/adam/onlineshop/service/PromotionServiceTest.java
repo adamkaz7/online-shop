@@ -3,6 +3,7 @@ package pl.adam.onlineshop.service;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import pl.adam.onlineshop.domain.promotion.PercentageDiscountPolicy;
 import pl.adam.onlineshop.domain.promotion.Promotion;
 import pl.adam.onlineshop.exception.PromotionNotFoundException;
 
@@ -22,7 +23,7 @@ public class PromotionServiceTest {
     public void setUp() {
         promotion = new Promotion(
                 PROMOTION_CODE,
-                new BigDecimal("10")
+                new PercentageDiscountPolicy(new BigDecimal("10"))
         );
 
         promotionService = new PromotionService(

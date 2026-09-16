@@ -96,8 +96,8 @@ public class InvoiceFileWriter {
 
         return promotion.getCode()
                 + " ("
-                + promotion.getDiscountPercentage()
-                + "%)";
+                + promotion.getDiscountDescription()
+                + ")";
     }
 
     private void writeLine(

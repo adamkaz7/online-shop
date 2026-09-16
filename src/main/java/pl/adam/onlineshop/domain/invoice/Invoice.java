@@ -1,5 +1,6 @@
 package pl.adam.onlineshop.domain.invoice;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import pl.adam.onlineshop.domain.customer.Customer;
@@ -54,6 +55,9 @@ public class Invoice {
         );
     }
 
+    // Design pattern: Builder
+    // Provides readable creation of invoices with optional promotion details.
+    @Builder
     public Invoice(
             @NonNull UUID invoiceId,
             @NonNull UUID orderId,
@@ -89,8 +93,8 @@ public class Invoice {
         String promotionDescription = hasPromotion()
                 ? promotion.getCode()
                   + " ("
-                  + promotion.getDiscountPercentage()
-                  + "%)" : "none";
+                  + promotion.getDiscountDescription()
+                  + ")" : "none";
 
         return String.format(
                 "Invoice ID: %s%n"

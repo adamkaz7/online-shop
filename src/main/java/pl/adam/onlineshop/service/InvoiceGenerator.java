@@ -25,16 +25,16 @@ public class InvoiceGenerator {
             throw new IllegalStateException("Order status must be COMPLETED");
         }
 
-        return new Invoice(
-                UUID.randomUUID(),
-                order.getOrderId(),
-                order.getCustomer(),
-                order.getItems(),
-                order.getSubtotalAmount(),
-                order.getAppliedPromotion(),
-                order.getDiscountAmount(),
-                order.getTotalAmount(),
-                Instant.now(clock)
-        );
+        return Invoice.builder()
+                .invoiceId(UUID.randomUUID())
+                .orderId(order.getOrderId())
+                .customer(order.getCustomer())
+                .items(order.getItems())
+                .subtotalAmount(order.getSubtotalAmount())
+                .promotion(order.getAppliedPromotion())
+                .discountAmount(order.getDiscountAmount())
+                .totalAmount(order.getTotalAmount())
+                .issuedAt(Instant.now(clock))
+                .build();
     }
 }

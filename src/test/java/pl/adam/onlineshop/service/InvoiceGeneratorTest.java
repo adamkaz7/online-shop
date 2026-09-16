@@ -7,6 +7,7 @@ import pl.adam.onlineshop.domain.customer.Customer;
 import pl.adam.onlineshop.domain.invoice.Invoice;
 import pl.adam.onlineshop.domain.order.Order;
 import pl.adam.onlineshop.domain.order.OrderItem;
+import pl.adam.onlineshop.domain.promotion.PercentageDiscountPolicy;
 import pl.adam.onlineshop.domain.promotion.Promotion;
 
 import java.math.BigDecimal;
@@ -100,7 +101,7 @@ public class InvoiceGeneratorTest {
 
         Promotion promotion = new Promotion(
                 "SAVE10",
-                new BigDecimal("10")
+                new PercentageDiscountPolicy(new BigDecimal("10"))
         );
 
         order.applyPromotion(promotion);

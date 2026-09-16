@@ -12,13 +12,15 @@ public class PromotionTest {
     private static final String PROMOTION_CODE = "SAVE10";
     private static final BigDecimal DISCOUNT_PERCENTAGE = new BigDecimal("10");
 
+    private static final DiscountPolicy DISCOUNT_POLICY = new PercentageDiscountPolicy(DISCOUNT_PERCENTAGE);
+
     @Test
-    @DisplayName("Should calculate and round discount")
-    void shouldCalculateAndRoundDiscount() {
+    @DisplayName("Should delegate discount calculation to discount policy")
+    void shouldDelegateDiscountCalculation() {
         // Arrange
         Promotion promotion = new Promotion(
                 PROMOTION_CODE,
-                DISCOUNT_PERCENTAGE
+                DISCOUNT_POLICY
         );
 
         BigDecimal amount = new BigDecimal("199.99");
@@ -31,12 +33,28 @@ public class PromotionTest {
     }
 
     @Test
+    @DisplayName("Should return discount description")
+    void shouldReturnDiscountDescription() {
+        // Arrange
+        Promotion promotion = new Promotion(
+                PROMOTION_CODE,
+                DISCOUNT_POLICY
+        );
+
+        // Act
+        String result = promotion.getDiscountDescription();
+
+        // Assert
+        assertThat(result).isEqualTo("10%");
+    }
+
+    @Test
     @DisplayName("Should normalize promotion code")
     void shouldNormalizePromotionCode() {
         // Act
         Promotion promotion = new Promotion(
                 " save10 ",
-                DISCOUNT_PERCENTAGE
+                DISCOUNT_POLICY
         );
 
         // Assert
@@ -47,21 +65,8 @@ public class PromotionTest {
     @DisplayName("Should reject blank promotion code")
     void shouldRejectBlankPromotionCode() {
         // Act + Assert
-        assertThatThrownBy(() -> new Promotion("  ", DISCOUNT_PERCENTAGE))
+        assertThatThrownBy(() -> new Promotion("  ", DISCOUNT_POLICY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Promotion code cannot be blank");
-    }
-
-    @Test
-    @DisplayName("Should reject discount percentage outside allowed range")
-    void shouldRejectDiscountPercentageOutsideAllowedRange() {
-        // Act + Assert
-        assertThatThrownBy(() -> new Promotion(PROMOTION_CODE, BigDecimal.ZERO))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Discount percentage must be greater than zero and not greater than 100");
-
-        assertThatThrownBy(() -> new Promotion(PROMOTION_CODE, new BigDecimal("101")))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Discount percentage must be greater than zero and not greater than 100");
     }
 }

@@ -13,6 +13,7 @@ import pl.adam.onlineshop.domain.invoice.Invoice;
 import pl.adam.onlineshop.domain.order.Order;
 import pl.adam.onlineshop.domain.product.Electronics;
 import pl.adam.onlineshop.domain.product.Product;
+import pl.adam.onlineshop.domain.promotion.PercentageDiscountPolicy;
 import pl.adam.onlineshop.domain.promotion.Promotion;
 import pl.adam.onlineshop.exception.InsufficientStockException;
 import pl.adam.onlineshop.exception.InvoiceFileException;
@@ -215,7 +216,7 @@ public class ShopCliTest {
 
         Promotion promotion = new Promotion(
                 "SAVE10",
-                new BigDecimal("10")
+                new PercentageDiscountPolicy(new BigDecimal("10"))
         );
 
         when(consoleReader.readInt("Select option: ")).thenReturn(4, 0);

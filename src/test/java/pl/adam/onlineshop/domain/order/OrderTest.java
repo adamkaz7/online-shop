@@ -3,6 +3,7 @@ package pl.adam.onlineshop.domain.order;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import pl.adam.onlineshop.domain.customer.Customer;
+import pl.adam.onlineshop.domain.promotion.PercentageDiscountPolicy;
 import pl.adam.onlineshop.domain.promotion.Promotion;
 
 import java.math.BigDecimal;
@@ -249,7 +250,7 @@ public class OrderTest {
 
         Promotion promotion = new Promotion(
                 "SAVE10",
-                new BigDecimal("10")
+                new PercentageDiscountPolicy(new BigDecimal("10"))
         );
 
         // Act
@@ -271,12 +272,12 @@ public class OrderTest {
 
         Promotion firstPromotion = new Promotion(
                 "SAVE10",
-                new BigDecimal("10")
+                new PercentageDiscountPolicy(new BigDecimal("10"))
         );
 
         Promotion secondPromotion = new Promotion(
                 "SAVE20",
-                new BigDecimal("20")
+                new PercentageDiscountPolicy(new BigDecimal("20"))
         );
 
         order.applyPromotion(firstPromotion);
@@ -298,7 +299,7 @@ public class OrderTest {
 
         Promotion promotion = new Promotion(
                 "SAVE10",
-                new BigDecimal("10")
+                new PercentageDiscountPolicy(new BigDecimal("10"))
         );
 
         order.markAsProcessing();
