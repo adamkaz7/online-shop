@@ -2,6 +2,7 @@ package pl.adam.onlineshop.domain.product;
 
 import lombok.Getter;
 import lombok.NonNull;
+import pl.adam.onlineshop.exception.InsufficientStockException;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -42,6 +43,25 @@ public abstract class Product {
     public void changeAvailableQuantity(int newQuantity) {
         validateAvailableQuantity(newQuantity);
         this.availableQuantity = newQuantity;
+    }
+
+    public void decreaseAvailableQuantity(int quantity) {
+        if (!hasAvailableQuantity(quantity)) {
+            throw new InsufficientStockException(id);
+        }
+
+        availableQuantity -= quantity;
+    }
+
+    public boolean hasAvailableQuantity(int quantity) {
+        validateRequestedQuantity(quantity);
+        return availableQuantity >= quantity;
+    }
+
+    private static void validateRequestedQuantity(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be greater than zero");
+        }
     }
 
     private static void validateAvailableQuantity(int availableQuantity) {
