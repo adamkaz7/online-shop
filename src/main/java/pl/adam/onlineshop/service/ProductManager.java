@@ -1,43 +1,43 @@
 package pl.adam.onlineshop.service;
 
 import lombok.NonNull;
-import pl.adam.onlineshop.product.Product;
+import lombok.RequiredArgsConstructor;
+import pl.adam.onlineshop.domain.product.Product;
+import pl.adam.onlineshop.exception.ProductAlreadyExistsException;
+import pl.adam.onlineshop.exception.ProductNotFoundException;
 import pl.adam.onlineshop.repository.ProductRepository;
 
 import java.util.List;
-import java.util.Optional;
 
+@RequiredArgsConstructor
 public class ProductManager {
+    @NonNull
     private final ProductRepository productRepository;
-
-    public ProductManager(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
 
     public void addProduct(@NonNull Product product) {
         if (productRepository.existsById(product.getId())) {
-            throw new IllegalStateException("Product with id " + product.getId() + " already exists");
+            throw new ProductAlreadyExistsException(product.getId());
         }
         productRepository.save(product);
     }
 
     public void updateProduct(@NonNull Product product) {
         if (!productRepository.existsById(product.getId())) {
-            throw new IllegalStateException("Cannot find product with id " + product.getId());
+            throw new ProductNotFoundException(product.getId());
         }
         productRepository.save(product);
     }
 
     public void removeProduct(@NonNull String id) {
         if (!productRepository.existsById(id)) {
-            throw new IllegalStateException("Cannot find product with id " + id);
+            throw new ProductNotFoundException(id);
         }
         productRepository.deleteById(id);
     }
 
-    public Product findProductById(String id) {
+    public Product findProductById(@NonNull String id) {
         return productRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Cannot find product with id " + id));
+                .orElseThrow(() -> new ProductNotFoundException(id));
     }
 
     public List<Product> getAllProducts() {

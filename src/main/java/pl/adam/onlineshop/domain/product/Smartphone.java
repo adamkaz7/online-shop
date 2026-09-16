@@ -1,4 +1,4 @@
-package pl.adam.onlineshop.product;
+package pl.adam.onlineshop.domain.product;
 
 import lombok.Getter;
 
@@ -14,7 +14,6 @@ public class Smartphone extends Product {
     private String selectedColor;
     private int selectedBatteryCapacity;
     private List<String> selectedAccessories;
-
 
     public Smartphone(
             String id,
