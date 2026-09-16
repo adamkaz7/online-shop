@@ -21,6 +21,7 @@ public class OrderProcessor {
     private final OrderRepository orderRepository;
     private final InvoiceRepository invoiceRepository;
     private final InvoiceGenerator invoiceGenerator;
+    private final Object stockLock = new Object();
 
     public OrderProcessor(
             @NonNull ProductRepository productRepository,
@@ -45,8 +46,10 @@ public class OrderProcessor {
         try {
             Map<UUID, Product> products = findProducts(order);
 
-            validateStock(order, products);
-            decreaseStock(order, products);
+            synchronized (stockLock) {
+                validateStock(order, products);
+                decreaseStock(order, products);
+            }
 
             order.complete();
             orderRepository.save(order);

@@ -3,14 +3,14 @@ package pl.adam.onlineshop.repository;
 import lombok.NonNull;
 import pl.adam.onlineshop.domain.invoice.Invoice;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryInvoiceRepository implements InvoiceRepository {
-    private final Map<UUID, Invoice> invoices = new HashMap<>();
+    private final Map<UUID, Invoice> invoices = new ConcurrentHashMap<>();
 
     @Override
     public void save(@NonNull Invoice invoice) {
