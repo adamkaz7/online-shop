@@ -34,6 +34,6 @@ public class CartItem {
 
     @Override
     public String toString() {
-        return "Cart item: " + product + ", quantity: " + quantity;
+        return product + " | Cart quantity: " + quantity;
     }
 }

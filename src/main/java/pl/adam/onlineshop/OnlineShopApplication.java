@@ -7,12 +7,14 @@ import pl.adam.onlineshop.domain.customer.Customer;
 import pl.adam.onlineshop.domain.product.Computer;
 import pl.adam.onlineshop.domain.product.Electronics;
 import pl.adam.onlineshop.domain.product.Smartphone;
+import pl.adam.onlineshop.persistence.InvoiceFileWriter;
 import pl.adam.onlineshop.repository.*;
 import pl.adam.onlineshop.service.InvoiceGenerator;
 import pl.adam.onlineshop.service.OrderProcessor;
 import pl.adam.onlineshop.service.ProductManager;
 
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,12 +42,17 @@ public class OnlineShopApplication {
 
         Cart cart = new Cart();
         ConsoleReader consoleReader = new ConsoleReader();
+        InvoiceFileWriter invoiceFileWriter =
+                new InvoiceFileWriter(
+                        Path.of("data", "invoices")
+                );
 
         addSampleProducts(productManager);
 
         ShopCli shopCli = new ShopCli(
                 productManager,
                 orderProcessor,
+                invoiceFileWriter,
                 customer,
                 cart,
                 consoleReader

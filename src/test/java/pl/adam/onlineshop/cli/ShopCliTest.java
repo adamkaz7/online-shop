@@ -13,21 +13,28 @@ import pl.adam.onlineshop.domain.order.Order;
 import pl.adam.onlineshop.domain.product.Electronics;
 import pl.adam.onlineshop.domain.product.Product;
 import pl.adam.onlineshop.exception.InsufficientStockException;
+import pl.adam.onlineshop.exception.InvoiceFileException;
+import pl.adam.onlineshop.persistence.InvoiceFileWriter;
 import pl.adam.onlineshop.service.OrderProcessor;
 import pl.adam.onlineshop.service.ProductManager;
 
+import java.io.IOException;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ShopCliTest {
+    private static final Path INVOICE_PATH = Path.of(
+            "data",
+            "invoices",
+            "invoice-test.txt");
+
     private static final UUID CUSTOMER_ID = UUID.fromString(
             "00000000-0000-0000-0000-000000000001"
     );
@@ -47,6 +54,9 @@ public class ShopCliTest {
 
     @Mock
     private Invoice invoice;
+
+    @Mock
+    private InvoiceFileWriter invoiceFileWriter;
 
     private Cart cart;
     private Product product;
@@ -71,6 +81,7 @@ public class ShopCliTest {
         shopCli = new ShopCli(
                 productManager,
                 orderProcessor,
+                invoiceFileWriter,
                 customer,
                 cart,
                 consoleReader
@@ -117,15 +128,7 @@ public class ShopCliTest {
 
         when(consoleReader.readInt("Select option: ")).thenReturn(4, 0);
 
-        when(invoice.getInvoiceId()).thenReturn(
-                UUID.fromString(
-                        "00000000-0000-0000-0000-000000000020"
-                )
-        );
-
-        when(invoice.getIssuedAt()).thenReturn(
-                LocalDateTime.of(2026, 7, 30, 12, 0)
-        );
+        when(invoiceFileWriter.write(invoice)).thenReturn(INVOICE_PATH);
 
         when(orderProcessor.process(any(Order.class)))
                 .thenAnswer(invocation -> {
@@ -140,6 +143,7 @@ public class ShopCliTest {
 
         // Assert
         assertThat(cart.isEmpty()).isTrue();
+        verify(invoiceFileWriter).write(invoice);
         verify(orderProcessor).process(any(Order.class));
     }
 
@@ -157,6 +161,37 @@ public class ShopCliTest {
 
         // Assert
         assertThat(cart.isEmpty()).isFalse();
+        verifyNoInteractions(invoiceFileWriter);
         verify(orderProcessor).process(any(Order.class));
+    }
+
+    @Test
+    @DisplayName("Should clear cart when invoice file cannot be written")
+    public void shouldClearCartWhenInvoiceFileCannotBeWritten() {
+        // Arrange
+        cart.addProduct(product, 2);
+
+        when(consoleReader.readInt("Select option: ")).thenReturn(4, 0);
+        when(orderProcessor.process(any(Order.class)))
+                .thenAnswer(invocation ->  {
+                    Order order = invocation.getArgument(0);
+                    order.markAsProcessing();
+                    order.complete();
+                    return invoice;
+                });
+
+        when(invoiceFileWriter.write(invoice))
+                .thenThrow(new InvoiceFileException(
+                        INVOICE_PATH,
+                        new IOException("Test write failure")
+                ));
+
+        // Act
+        shopCli.run();
+
+        // Assert
+        assertThat(cart.isEmpty()).isTrue();
+        verify(orderProcessor).process(any(Order.class));
+        verify(invoiceFileWriter).write(invoice);
     }
 }

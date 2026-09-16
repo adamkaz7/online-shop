@@ -30,4 +30,16 @@ public record OrderItem(UUID productId, String productName, BigDecimal unitPrice
     public BigDecimal calculateSubtotal() {
         return unitPrice.multiply(BigDecimal.valueOf(quantity));
     }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "%s | Product ID: %s | Unit price: %s zł | Quantity: %d | Subtotal: %s zł",
+                productName,
+                productId,
+                unitPrice,
+                quantity,
+                calculateSubtotal()
+        );
+    }
 }
